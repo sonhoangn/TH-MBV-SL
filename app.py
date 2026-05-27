@@ -11,14 +11,20 @@ from datetime import datetime
 # ==============================================================================
 st.set_page_config(page_title="MBV 140Y Treasure Hunt", page_icon="🗺️", layout="centered")
 
-# Native, zero-dependency SQL connection engine
-conn = st.connection("local_db" if st.runtime.exists() and not st.get_option("server.port") else "streamlit_db",
-                     type="sql")
+# Hardcode the configuration directly to eliminate secrets.toml path mismatches
+DB_URI = "sqlite:///streamlit_app.db"
+
+conn = st.connection(
+    "treasure_hunt_db",
+    type="sql",
+    url=DB_URI
+)
 
 def init_db():
     """Forces a physical database layout file reset to wipe cached schema mismatches"""
     db_file = "streamlit_app.db"
 
+    # CRITICAL: Keep this False so your production data is never wiped!
     FORCE_WIPE_OUT = False
 
     if FORCE_WIPE_OUT and os.path.exists(db_file):
@@ -27,7 +33,7 @@ def init_db():
         except Exception:
             pass
 
-    # Initialize via native sqlite3 to safely clear the st.connection cache layout
+    # Initialize via native sqlite3 matching our explicit hardcoded URI target
     with sqlite3.connect(db_file) as native_conn:
         cursor = native_conn.cursor()
         cursor.execute("""
