@@ -220,26 +220,31 @@ if st.session_state.admin_override:
         st.rerun()
 
     st.markdown("---")
-    st.subheader("📋 Operational Live Leaderboard Log File")
 
+    # 1. SUMMARY TABLE (Aggregated Performance)
+    st.subheader("🏆 Leaderboard Summary")
+    summary_query = """
+        SELECT 
+            team_name as 'Team/Player',
+            COUNT(DISTINCT step) as 'Steps Completed',
+            SUM(attempts) as 'Total Attempts',
+            (strftime('%s', MAX(end_time)) - strftime('%s', MIN(start_time))) / 60.0 as 'Total Duration (min)'
+        FROM hunt_logs
+        WHERE end_time != ''
+        GROUP BY team_name;
+    """
     try:
-        # Keep this as a plain string inside conn.query!
-        logs_df = conn.query("""
-            SELECT 
-                team_name as 'Team/Player ID', 
-                player_type as 'Type', 
-                group_members as 'Group Members',
-                step as 'Station Step', 
-                start_time as 'Unlocked At', 
-                end_time as 'Verified At', 
-                status as 'Status',
-                notes as 'Notes'
-            FROM hunt_logs;
-        """)
-        if not logs_df.empty:
-            st.dataframe(logs_df, use_container_width=True)
-        else:
-            st.info("No active runs logged yet.")
+        summary_df = conn.query(summary_query)
+        st.dataframe(summary_df, use_container_width=True)
+    except Exception as e:
+        st.info("No data yet for summary.")
+
+    # 2. FULL RAW LOGS
+    st.markdown("---")
+    st.subheader("📋 Raw Operational Logs")
+    try:
+        logs_df = conn.query("SELECT * FROM hunt_logs ORDER BY timestamp DESC;")
+        st.dataframe(logs_df, use_container_width=True)
     except Exception:
         st.info("Database is initializing...")
 
