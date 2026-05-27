@@ -271,8 +271,11 @@ if not st.session_state.team_name and not admin_portal:
                 reg_display = f"Group: {reg_uid}"
                 roster_meta = " | ".join(roster_list) if roster_list else "Empty Roster"
 
-            submit_registration = st.form_submit_button("Create Profile & Log In", type="good",
-                                                        use_container_width=True)
+            submit_registration = st.form_submit_button(
+                "Create Profile & Log In",
+                type="primary",  # <-- Fixed type parameter here
+                use_container_width=True
+            )
 
             if submit_registration:
                 if reg_uid and reg_display:
