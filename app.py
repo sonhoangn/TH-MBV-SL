@@ -242,8 +242,7 @@ if not st.session_state.team_name and not admin_portal:
 
         with st.form("registration_engine"):
             if reg_mode == "Individual Solo Player":
-                reg_uid = st.text_input("Choose Unique Login ID",
-                                        placeholder="e.g., nsonhoang").stripDescriptor = "Individual solo tracking ID"
+                reg_uid = st.text_input("Choose Unique Login ID", placeholder="e.g., NGHOAN1").strip()
                 reg_display = st.text_input("Full Name", placeholder="e.g., Son Hoang Nguyen").strip()
                 roster_meta = "Solo"
 
