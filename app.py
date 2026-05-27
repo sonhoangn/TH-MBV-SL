@@ -7,7 +7,7 @@ from streamlit_gsheets import GSheetsConnection
 # ==============================================================================
 # 1. GLOBAL INTERFACE SETUP & SYSTEM OVERRIDES
 # ==============================================================================
-st.set_page_config(page_title="Corporate Treasure Hunt v2", page_icon="🗺️", layout="centered")
+st.set_page_config(page_title="Mercedes-Benz Vietnam 140Y Anniversary Treasure Hunt", page_icon="🗺️", layout="centered")
 
 if "team_name" not in st.session_state:
     st.session_state.team_name = None
@@ -99,13 +99,13 @@ ui = LOCALIZED_UI[selected_lang]
 # ==============================================================================
 # 4. LIVE CUSTOMIZABLE BACKGROUND GRAPHICS ENGINE
 # ==============================================================================
-# Merges your custom admin image URL dynamically straight into the background layout rules
+# Safely injects the background URL without breaking the media query brackets
 st.markdown(
-    f"""
+    """
     <style>
     .stApp {{
         background: linear-gradient(rgba(var(--bg-rgb, 255, 255, 255), 0.85), rgba(var(--bg-rgb, 255, 255, 255), 0.85)), 
-                    url("{bg_url}");
+                    url("{url}");
         background-attachment: fixed;
         background-size: cover;
         background-position: center;
@@ -119,7 +119,7 @@ st.markdown(
     .stAppHeader {{ display: none !important; }}
     div[data-testid="stManageAppPageNavFloatingActionButton"] {{ display: none !important; }}
     </style>
-    """,
+    """.format(url=bg_url),
     unsafe_allow_html=True
 )
 
