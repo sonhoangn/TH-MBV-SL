@@ -73,7 +73,7 @@ LOCALIZED_UI = {
 # ==============================================================================
 # 3. CLOUD CONNECTIONS & LIVE BACKGROUND FETCH
 # ==============================================================================
-bg_url = "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=1200"  # Safe, verified default abstract background
+bg_url = "https://group.mercedes-benz.com/bilder/innovationen/specials/140-years-of-innovation/140-years-of-innovation-visual-3-2-w1680xh945-cutout.jpg"
 try:
     conn = st.connection("gsheets", type=GSheetsConnection)
     quests_df = conn.read(worksheet="config", ttl=2)
