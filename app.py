@@ -300,12 +300,10 @@ if not st.session_state.team_name and not admin_portal:
 
             if submit_registration:
                 if reg_uid and reg_display:
-                    # Automatically log them in by setting the session state variable
                     st.session_state.team_name = reg_uid
                     st.session_state.current_step = 1
                     st.session_state.stage_started = False
 
-                    # Log the registration metadata directly into your Google Sheets table instantly
                     try:
                         registration_stamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                         reg_log = pd.DataFrame([{
@@ -313,7 +311,6 @@ if not st.session_state.team_name and not admin_portal:
                             "step": 0,
                             "start_time": registration_stamp,
                             "end_time": roster_meta,
-                            # Store roster details cleanly in the end_time column for reference
                             "attempts": 0,
                             "status": f"REGISTERED: {reg_mode}"
                         }])
@@ -326,6 +323,52 @@ if not st.session_state.team_name and not admin_portal:
                     st.rerun()
                 else:
                     st.error("Please fill out all required authentication fields.")
+
+                # --------------------------------------------------------------------------
+                # 🔑 NEW: DISCRETE ADMIN PORTAL ACCESS TRIGGER
+                # --------------------------------------------------------------------------
+            st.markdown("---")
+            col_left, col_right = st.columns([3, 1])
+            with col_right:
+                # A clean, low-profile expander acting as a hidden door at the bottom of the page
+                with st.expander("🛠️ System Console"):
+                    admin_pass = st.text_input("Master Password", type="password", key="main_admin_pass")
+                    if admin_pass == "hunt-master-2026":
+                        # When password matches, we flip a session state variable to force the screen to redraw as the dashboard
+                        st.session_state.admin_override = True
+                        st.rerun()
+
+        # ==============================================================================
+        # 7. REDIRECT MAIN VIEWPORT TO ADMIN DASHBOARD
+        # ==============================================================================
+        # Initialize the override state if it doesn't exist yet
+        if "admin_override" not in st.session_state:
+            st.session_state.admin_override = False
+
+        # If the override is tripped, overwrite the entire central viewport with your live admin tracking data
+        if st.session_state.admin_override:
+            st.title("📊 Global Operations Dashboard")
+            st.write("Review real-time hunter timelines and adjust puzzle configuration sets.")
+
+            # Add a prominent exit button to quickly jump back to the player view on your phone
+            if st.button("⬅️ Exit Admin Dashboard & Return to Game Lobby", type="secondary", use_container_width=True):
+                st.session_state.admin_override = False
+                st.rerun()
+
+            st.markdown("---")
+            st.subheader("📋 Operational Live Leaderboard")
+            try:
+                logs_df = conn.read(worksheet="logs", ttl=2)
+                st.dataframe(logs_df, use_container_width=True)
+            except:
+                st.info("No logs registered in database yet.")
+
+            st.subheader("🛠️ Active System Layout Configuration")
+            if 'quests_df' in locals() or 'quests_df' in globals():
+                st.dataframe(quests_df, use_container_width=True)
+            else:
+                fallback_df = pd.DataFrame(quests_list)
+                st.dataframe(fallback_df, use_container_width=True)
 
 elif not admin_portal:
     if st.session_state.current_step <= total_quests:
