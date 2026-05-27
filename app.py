@@ -152,7 +152,7 @@ if st.session_state.admin_override:
     st.subheader("🖼️ Custom App Background Management")
     with st.form("bg_management_form"):
         new_bg = st.text_input("Paste Direct Image Link URL (.jpg / .png)", value=bg_url,
-                               placeholder="https://example.com/workspace.jpg")
+                               placeholder="https://group.mercedes-benz.com/bilder/innovationen/specials/140-years-of-innovation/140-years-of-innovation-visual-3-2-w1680xh945-cutout.jpg")
         save_bg_btn = st.form_submit_button("Update System Background Image", type="primary")
 
         if save_bg_btn and new_bg:
