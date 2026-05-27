@@ -27,8 +27,6 @@ BG_URL = "https://group.mercedes-benz.com/bilder/innovationen/specials/140-years
 # 2. TARGET DATABASE CREDENTIAL CONFIGURATION
 # ==============================================================================
 SHEET_ID = "1zcsOhwx9L3-B7D2l4T5oZCZkxlw-Rd9YiUh0gXidG2Y"
-
-#
 FORM_URL = "https://docs.google.com/forms/d/18LuS6HSdv8UUEAKWwjwc0RdnGrg2mtn2lOuH6cFs6Lo/formResponse"
 
 # Mapping keys to match your Form field entry components
@@ -56,15 +54,9 @@ def push_log_to_cloud(team, step, start, end, attempts, status):
     }
     try:
         # 🛡️ Point verify to your corporate root certificate file
-        response = requests.post(
-            FORM_URL,
-            data=payload,
-            timeout=5,
-            verify="corp_root.crt"
-        )
-        print(f"Form submission response: {response.status_code}")
-    except Exception as e:
-        print(f"Network request failed: {e}")
+        requests.post(FORM_URL, data=payload, timeout=5, verify="corp_root.crt")
+    except Exception:
+        pass
 
 # ==============================================================================
 # 4. LIGHTWEIGHT LIVE CONFIG FETCH
@@ -228,8 +220,8 @@ elif not st.session_state.team_name:
                 st.session_state.current_step = 1
                 st.session_state.stage_started = False
 
-                # Register team profile response line row to sheet matrix via form engine
-                push_log_to_cloud(reg_meta, 0, datetime.now().strftime("%Y-%m-%d %H:%M:%S"), reg_meta, 0, "REGISTERED")
+                # 🎯 FIXED: Passed 'reg_uid' as the first positional argument instead of 'reg_meta'
+                push_log_to_cloud(reg_uid, 0, datetime.now().strftime("%Y-%m-%d %H:%M:%S"), reg_meta, 0, "REGISTERED")
 
                 st.success("Profile initialized online!")
                 time.sleep(0.5)
@@ -304,7 +296,8 @@ else:
         st.title(ui["victory"])
         st.subheader(ui["victory_sub"])
         try:
-            logs_url = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/gviz/tq?tqx=out:csv&sheet=logs"
+            # 🎯 FIXED: Changed sheet context to pull from Form Responses 1 here as well
+            logs_url = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/gviz/tq?tqx=out:csv&sheet=Form%20Responses%201"
             full_logs_df = pd.read_csv(logs_url)
 
             player_logs = full_logs_df[full_logs_df["team_name"] == st.session_state.team_name].copy()
