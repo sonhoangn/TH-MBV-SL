@@ -104,7 +104,7 @@ quests_list = [
                    "Tôi là gì?",
         "clue_de": "Blicke zum Himmel, doch verirre dich nicht. Meine drei Zacken weisen den Weg über Land, See und Luft – elegant und schlicht. Was bin ich?",
         "img_url": "https://group.mercedes-benz.com/bilder/misc/visuals-stern/mb-stern-2025-04-w1680xh945-cutout.jpg",
-        "code": "574R"
+        "code": "STAR"
     },
     {
         "step": 2,
@@ -116,7 +116,7 @@ quests_list = [
                    "Tôi là gì? (gợi ý: hãy nhớ đến triết lý Một người, một động cơ - One Man, One Engine.)",
         "clue_de": "Drei Buchstaben machen aus einer Luxuslimousine ein brüllendes Rennstreckenbiest. Von einem Meister von Hand gefertigt, von West bis Ost. Was bin ich? (Hinweis: Ein Mann, ein Motor)",
         "img_url": "https://di-uploads-pod30.dealerinspire.com/budsnailmotorcarsltd/uploads/2020/05/AMG-Handcrafted-Engine-Production-M139-Engine.jpg",
-        "code": "AM9"
+        "code": "AMG"
     },
     {
         "step": 3,
@@ -128,7 +128,7 @@ quests_list = [
                    "Tôi là gì?",
         "clue_de": "Von Benz-Ingenieuren entwickelt, um dich in der Spur zu halten. Ich pulse bei Vollbremsung und rette dich in der Not, indem ich das Blockieren der Räder verhindere. Was bin ich?",
         "img_url": "https://500sec.com/wp-content/uploads/2009/12/462255_788468_3661_2880_96067472184-37.jpg",
-        "code": "48S"
+        "code": "ABS"
     }
 ]
 total_quests = len(quests_list)
