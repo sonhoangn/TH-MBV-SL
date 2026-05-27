@@ -69,15 +69,15 @@ BG_URL = "https://group.mercedes-benz.com/bilder/innovationen/specials/140-years
 
 # Hardcoded Questions Array
 quests_list = [
-    {"step": 1, "clue_en": "Check near the main showroom entrance display.",
-     "clue_vi": "Kiểm tra gần khu trưng bày lối vào showroom chính.",
-     "clue_de": "Prüfe den Haupteingang Ausstellungsbereich.", "code": "MBV-START-140"},
-    {"step": 2, "clue_en": "Look under the glass coffee table in the lounge.",
-     "clue_vi": "Tìm dưới bàn cà phê bằng kính ở khu vực phòng chờ.",
-     "clue_de": "Suche unter dem Kaffeetisch aus Glas in der Lounge.", "code": "SILVER-ARROW"},
-    {"step": 3, "clue_en": "The final puzzle key is hidden by the classic model scale array.",
-     "clue_vi": "Mã số cuối cùng được giấu cạnh tủ mô hình xe cổ.",
-     "clue_de": "Der letzte Schlüssel ist beim Oldtimer-Modellregal versteckt.", "code": "AMG-POWER-99"}
+    {"step": 1, "clue_en": "Look to the sky, but don’t get lost. My three points cover land, sea, and air, no matter the cost. What am I?",
+     "clue_vi": "Nhìn lên bầu trời nhưng đừng để lạc lối. Ba đỉnh của tôi làm chủ cả đất liền, đường biển và bầu trời. Tôi là gì?",
+     "clue_de": "Blicke zum Himmel, doch verirre dich nicht. Meine drei Zacken weisen den Weg über Land, See und Luft – elegant und schlicht. Was bin ich?", "code": "574R"},
+    {"step": 2, "clue_en": "Three letters that turn a luxury cruiser into a roaring track beast. Handcrafted by one master, from the west to the east. What am I? (hint: One Man, One Engine)",
+     "clue_vi": "Ba chữ cái biến một chiếc xe sang êm ái thành một con quái thú gầm vang trên đường đua. Được chế tác thủ công bởi một kỹ sư duy nhất. Tôi là gì? (gợi ý: hãy nhớ đến triết lý Một người, một động cơ.)",
+     "clue_de": "Drei Buchstaben machen aus einer Luxuslimousine ein brüllendes Rennstreckenbiest. Von einem Meister von Hand gefertigt, von West bis Ost. Was bin ich? (Hinweis: Ein Mann, ein Motor)", "code": "AM9"},
+    {"step": 3, "clue_en": "Invented by Benz engineers to keep you in line, I pulse when you panic and save you just in time. I stop the wheels from locking tight. What am I?",
+     "clue_vi": "Được các kỹ sư Benz phát minh để giữ bạn an toàn. Tôi sẽ nhấp nhả liên tục khi bạn phanh gấp, giúp bánh xe không bị bó cứng. Tôi là gì?",
+     "clue_de": "Von Benz-Ingenieuren entwickelt, um dich in der Spur zu halten. Ich pulse bei Vollbremsung und rette dich in der Not, indem ich das Blockieren der Räder verhindere. Was bin ich?", "code": "48S"}
 ]
 total_quests = len(quests_list)
 
