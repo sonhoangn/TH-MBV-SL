@@ -1,3 +1,4 @@
+import os
 import streamlit as st
 import pandas as pd
 import time
@@ -14,12 +15,24 @@ conn = st.connection("local_db" if st.runtime.exists() and not st.get_option("se
 
 
 def init_db():
-    """Forces a database reset to apply the new schema updates"""
-    with conn.session as session:
+    """Forces a physical database layout file reset to wipe cached schema mismatches"""
+    db_file = "streamlit_app.db"
 
-        # session.execute("DROP TABLE IF EXISTS hunt_logs;")
+    # ⚠ONCE-OFF RESET TRIGGER: Change this to True to force delete the old corrupt file layout.
+    # After  app reloads cleanly once in the browser, flip it back to False
+    FORCE_WIPE_OUT = True
 
-        session.execute("""
+    if FORCE_WIPE_OUT and os.path.exists(db_file):
+        try:
+            os.remove(db_file)
+        except Exception:
+            pass
+
+    # Re-initialize the clean database using native sqlite3 execution context
+    import sqlite3
+    with sqlite3.connect(db_file) as native_conn:
+        cursor = native_conn.cursor()
+        cursor.execute("""
             CREATE TABLE IF NOT EXISTS hunt_logs (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 team_name TEXT,
@@ -34,7 +47,7 @@ def init_db():
                 timestamp TEXT
             );
         """)
-        session.commit()
+        native_conn.commit()
 
 
 def push_log_to_db(team, step, start, end, attempts, status, player_type="", members="", notes=""):
