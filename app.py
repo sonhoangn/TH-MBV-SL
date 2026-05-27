@@ -19,7 +19,7 @@ def init_db():
     """Forces a physical database layout file reset to wipe cached schema mismatches"""
     db_file = "streamlit_app.db"
 
-    FORCE_WIPE_OUT = False
+    FORCE_WIPE_OUT = True
 
     if FORCE_WIPE_OUT and os.path.exists(db_file):
         try:
