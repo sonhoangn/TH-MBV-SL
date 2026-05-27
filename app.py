@@ -202,22 +202,107 @@ total_quests = len(quests_list)
 
 if not st.session_state.team_name and not admin_portal:
     st.title(ui["welcome"])
-    with st.form("lobby_entry"):
-        player_id = st.text_input(ui["team_label"], placeholder="e.g., Team Alpha").strip()
-        enter_gate = st.form_submit_button(ui["start_btn"], type="primary")
-        if enter_gate and player_id:
-            st.session_state.team_name = player_id
-            # Scan records via the database to determine if player can resume state mid-run
-            try:
-                logs_df = conn.read(worksheet="logs", ttl=2)
-                team_history = logs_df[logs_df["team_name"] == player_id]
-                if not team_history.empty:
-                    completed_steps = team_history[team_history["status"] == "COMPLETED"]["step"].max()
-                    if not pd.isna(completed_steps):
-                        st.session_state.current_step = int(completed_steps) + 1
-            except:
-                pass
-            st.rerun()
+
+    # Render modern tab dividers to split Login vs Registration workflows cleanly
+    tab_login, tab_register = st.tabs(["🔐 Log In", "📝 Register New Team/Player"])
+
+    # --------------------------------------------------------------------------
+    # TAB A: PLAYER LOGIN
+    # --------------------------------------------------------------------------
+    with tab_login:
+        with st.form("lobby_entry"):
+            player_id = st.text_input(ui["team_label"], placeholder="e.g., Team Alpha", key="login_uid").strip()
+            enter_gate = st.form_submit_button(ui["start_btn"], type="primary", use_container_width=True)
+
+            if enter_gate and player_id:
+                st.session_state.team_name = player_id
+                # Check database to see if this team already has active progress logs
+                try:
+                    logs_df = conn.read(worksheet="logs", ttl=2)
+                    team_history = logs_df[logs_df["team_name"] == player_id]
+                    if not team_history.empty:
+                        completed_steps = team_history[team_history["status"] == "COMPLETED"]["step"].max()
+                        if not pd.isna(completed_steps):
+                            st.session_state.current_step = int(completed_steps) + 1
+                except:
+                    pass
+                st.rerun()
+
+    # --------------------------------------------------------------------------
+    # TAB B: DYNAMIC MULTI-MODE REGISTRATION SYSTEM
+    # --------------------------------------------------------------------------
+    with tab_register:
+        # Toggle dynamically changes form inputs based on team structure
+        reg_mode = st.radio(
+            "Select Registration Profile Type",
+            ["Individual Solo Player", "Group Team Roster"],
+            horizontal=True,
+            label_visibility="collapsed"
+        )
+
+        with st.form("registration_engine"):
+            if reg_mode == "Individual Solo Player":
+                reg_uid = st.text_input("Choose Unique Login ID",
+                                        placeholder="e.g., nsonhoang").stripDescriptor = "Individual solo tracking ID"
+                reg_display = st.text_input("Full Name", placeholder="e.g., Son Hoang Nguyen").strip()
+                roster_meta = "Solo"
+
+            else:
+                reg_uid = st.text_input("Choose Unique Team Login ID", placeholder="e.g., alpha_team").strip()
+                st.markdown("---")
+                st.write("**Group Roster Configuration**")
+
+                # Dynamic inputs for up to 5 team members natively
+                member_cols = st.columns(2)
+                with member_cols[0]:
+                    m1_name = st.text_input("Member 1 Name", placeholder="Name")
+                    m2_name = st.text_input("Member 2 Name", placeholder="Name")
+                    m3_name = st.text_input("Member 3 Name", placeholder="Name")
+                with member_cols[1]:
+                    m1_id = st.text_input("Member 1 Employee ID/UID", placeholder="ID")
+                    m2_id = st.text_input("Member 2 Employee ID/UID", placeholder="ID")
+                    m3_id = st.text_input("Member 3 Employee ID/UID", placeholder="ID")
+
+                # Combine values cleanly into a readable metadata string for your sheet rows
+                roster_list = []
+                if m1_name: roster_list.append(f"{m1_name} ({m1_id})")
+                if m2_name: roster_list.append(f"{m2_name} ({m2_id})")
+                if m3_name: roster_list.append(f"{m3_name} ({m3_id})")
+
+                reg_display = f"Group: {reg_uid}"
+                roster_meta = " | ".join(roster_list) if roster_list else "Empty Roster"
+
+            submit_registration = st.form_submit_button("Create Profile & Log In", type="good",
+                                                        use_container_width=True)
+
+            if submit_registration:
+                if reg_uid and reg_display:
+                    # Automatically log them in by setting the session state variable
+                    st.session_state.team_name = reg_uid
+                    st.session_state.current_step = 1
+                    st.session_state.stage_started = False
+
+                    # Log the registration metadata directly into your Google Sheets table instantly
+                    try:
+                        registration_stamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                        reg_log = pd.DataFrame([{
+                            "team_name": reg_uid,
+                            "step": 0,
+                            "start_time": registration_stamp,
+                            "end_time": roster_meta,
+                            # Store roster details cleanly in the end_time column for reference
+                            "attempts": 0,
+                            "status": f"REGISTERED: {reg_mode}"
+                        }])
+                        conn.create(worksheet="logs", data=reg_log, if_exists="append")
+                        st.success("Registration complete! Booting game matrix...")
+                        time.sleep(1)
+                    except Exception as e:
+                        st.error(f"Cloud write delay: {e}")
+
+                    st.rerun()
+                else:
+                    st.error("Please fill out all required authentication fields.")
 
 elif not admin_portal:
     if st.session_state.current_step <= total_quests:
