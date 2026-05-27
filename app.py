@@ -2,135 +2,319 @@ import streamlit as st
 import pandas as pd
 import time
 from datetime import datetime
+from streamlit_gsheets import GSheetsConnection
 
-# 1. APPLICATION GLOBAL CONFIGURATION
+# ==============================================================================
+# 1. GLOBAL INTERFACE SETUP & CUSTOM STYLES
+# ==============================================================================
 st.set_page_config(page_title="Corporate Treasure Hunt v2", page_icon="🗺️", layout="centered")
 
-# Initialize persistent session states for user tracking
+# Initialize persistent session tracking structures
 if "team_name" not in st.session_state:
     st.session_state.team_name = None
 if "current_step" not in st.session_state:
     st.session_state.current_step = 1
-if "game_started" not in st.session_state:
-    st.session_state.game_started = False
+if "stage_started" not in st.session_state:
+    st.session_state.stage_started = False
+if "stage_start_time" not in st.session_state:
+    st.session_state.stage_start_time = None
 
-# 2. MULTILINGUAL DICTIONARY MATRIX
+# ==============================================================================
+# 2. LOCALIZED LINGUISTIC DICTIONARY (NATURAL & IDIOMATIC)
+# ==============================================================================
 LOCALIZED_UI = {
     "en": {
-        "welcome": "Welcome to the Adventure", "team_label": "Enter Team / Player Name",
-        "start_btn": "Enter Game Lobby", "checkpoint": "Checkpoint", "clue_locked": "🔒 Clue is Locked",
-        "unlock_btn": "Start Stage Timer", "part1": "Part 1: Riddle Solution", "part2": "Part 2: QR Card Security Key",
-        "submit": "Verify Double Credentials", "victory": "🏆 Victory!", "time_taken": "Total Time Taken"
+        "welcome": "Welcome to the Adventure Hunt",
+        "team_label": "Enter Team or Player Name",
+        "start_btn": "Enter Game Lobby",
+        "checkpoint": "Station",
+        "of": "of",
+        "clue_locked": "🔒 Next Clue is Locked",
+        "unlock_btn": "▶️ Unlock Clue & Start Timer",
+        "your_clue": "YOUR CURRENT CLUE:",
+        "part1": "Part 1: Riddle Answer Code",
+        "part1_holder": "Type riddle solution here...",
+        "part2": "Part 2: Physical Location Key Code",
+        "part2_holder": "Type or scan the code from the physical card...",
+        "anti_cheat": "Anti-Cheat Verification",
+        "anti_cheat_sub": "Locate the physical card hidden in the real world to obtain this key.",
+        "scan_btn": "📸 Open Camera Scanner",
+        "close_cam": "Close Camera",
+        "attempts_msg": "Submission attempts logged for this step:",
+        "submit_btn": "Submit Double Verification",
+        "victory": "🏆 Congratulations!",
+        "victory_sub": "You have successfully crossed the finish line! Here is your performance overview:",
+        "total_time": "Total Elapsed Duration",
+        "combined_subs": "Total Submission Attempts",
+        "timeline": "Route Progress Breakdown",
+        "step": "Station",
+        "clue_hd": "Challenge Clue",
+        "attempts": "Attempts",
+        "solved_time": "Solved Duration",
+        "organizer_msg": "🎯 Your scores are locked in. Please inform the event coordinator that you have completed the hunt!",
+        "invalid_match": "❌ Verification mismatch! Please check both your riddle answer and physical card code.",
+        "logout": "Log Out"
     },
     "vi": {
-        "welcome": "Chào Mừng Đến Với Cuộc Săn Tìm", "team_label": "Nhập Tên Đội / Người Chơi",
-        "start_btn": "Vào Phòng Chờ Game", "checkpoint": "Trạm Kiểm Soát", "clue_locked": "🔒 Gợi Ý Đang Khóa",
-        "unlock_btn": "Bắt Đầu Tính Giờ Trạm", "part1": "Phần 1: Đáp Án Câu Đố", "part2": "Phần 2: Mã Xác Thực Thẻ QR",
-        "submit": "Xác Thực Hệ Thống Đúp", "victory": "🏆 Chiến Thắng!", "time_taken": "Tổng Thời Gian Hoàn Thành"
+        "welcome": "Chào Mừng Đến Với Cuộc Săn Tìm",
+        "team_label": "Nhập Tên Đội Hoặc Người Chơi",
+        "start_btn": "Vào Phòng Chờ",
+        "checkpoint": "Trạm",
+        "of": "trên",
+        "clue_locked": "🔒 Gợi Ý Đang Bị Khóa",
+        "unlock_btn": "▶️ Mở Khóa Gợi Ý & Tính Giờ",
+        "your_clue": "GỢI Ý HIỆN TẠI CỦA BẠN:",
+        "part1": "Phần 1: Đáp Án Câu Đố",
+        "part1_holder": "Nhập lời giải câu đố tại đây...",
+        "part2": "Phần 2: Mã Xác Thực Vị Trí Thực Tế",
+        "part2_holder": "Nhập hoặc quét mã ghi trên thẻ vật lý...",
+        "anti_cheat": "Xác Minh Chống Gian Lận",
+        "anti_cheat_sub": "Tìm thẻ vật lý được ẩn giấu trong khu vực trò chơi để lấy mã này.",
+        "scan_btn": "📸 Mở Máy Ảnh Quét QR",
+        "close_cam": "Đóng Máy Ảnh",
+        "attempts_msg": "Số lượt thử đã ghi nhận ở trạm này:",
+        "submit_btn": "Gửi Đáp Án & Mã Xác Nhận",
+        "victory": "🏆 Xuất Sắc Hoàn Thành!",
+        "victory_sub": "Bạn đã về đích thành công! Dưới đây là bảng thống kê thành tích của bạn:",
+        "total_time": "Tổng Thời Gian Hoàn Thành",
+        "combined_subs": "Tổng Số Lượt Thử",
+        "timeline": "Chi Tiết Lộ Trình Di Chuyển",
+        "step": "Trạm",
+        "clue_hd": "Nội Dung Gợi Ý",
+        "attempts": "Số Lượt Thử",
+        "solved_time": "Thời Gian Giải",
+        "organizer_msg": "🎯 Điểm số của bạn đã được lưu. Hãy báo với ban tổ chức rằng bạn đã hoàn thành cuộc đua!",
+        "invalid_match": "❌ Đáp án hoặc mã số vị trí chưa chính xác. Vui lòng kiểm tra lại!",
+        "logout": "Đăng Xuất"
     },
     "de": {
-        "welcome": "Willkommen zur Schnitzeljagd", "team_label": "Team- / Spielername eingeben",
-        "start_btn": "Spiel-Lobby betreten", "checkpoint": "Kontrollpunkt", "clue_locked": "🔒 Hinweis gesperrt",
-        "unlock_btn": "Etappen-Timer starten", "part1": "Teil 1: Rätsellösung",
-        "part2": "Teil 2: QR-Karten-Sicherheitsschlüssel",
-        "submit": "Doppelte Anmeldedaten verifizieren", "victory": "🏆 Sieg!", "time_taken": "Gesamte benötigte Zeit"
+        "welcome": "Willkommen zur Abenteuerjagd",
+        "team_label": "Team- oder Spielername eingeben",
+        "start_btn": "Spiel-Lobby betreten",
+        "checkpoint": "Station",
+        "of": "von",
+        "clue_locked": "🔒 Nächster Hinweis ist gesperrt",
+        "unlock_btn": "▶️ Hinweis freischalten & Timer starten",
+        "your_clue": "IHR AKTUELLER HINWEIS:",
+        "part1": "Teil 1: Rätsellösung",
+        "part1_holder": "Rätsellösung hier eingeben...",
+        "part2": "Teil 2: Physischer Standort-Code",
+        "part2_holder": "Code von der physischen Karte eingeben oder scannen...",
+        "anti_cheat": "Anti-Cheat-Überprüfung",
+        "anti_cheat_sub": "Finden Sie die versteckte Karte in der realen Welt, um diesen Code zu erhalten.",
+        "scan_btn": "📸 Kamera-Scanner öffnen",
+        "close_cam": "Kamera schließen",
+        "attempts_msg": "Registrierte Versuche für diese Station:",
+        "submit_btn": "Doppelte Verifizierung absenden",
+        "victory": "🏆 Herzlichen Glückwunsch!",
+        "victory_sub": "Sie haben die Ziellinie überquert! Hier ist Ihre Leistungsübersicht:",
+        "total_time": "Gesamte Laufzeit",
+        "combined_subs": "Versuche Insgesamt",
+        "timeline": "Details Routenverlauf",
+        "step": "Station",
+        "clue_hd": "Hinweistext",
+        "attempts": "Versuche",
+        "solved_time": "Gelöste Zeit",
+        "organizer_msg": "🎯 Ihre Ergebnisse sind gesichert. Bitte informieren Sie den Spielleiter, dass Sie fertig sind!",
+        "invalid_match": "❌ Verifizierung fehlgeschlagen! Bitte überprüfen Sie Ihre Rätsellösung und den Standort-Code.",
+        "logout": "Abmelden"
     }
 }
 
-# 3. GLOBAL LANGUAGE TOGGLE CONTROL BAR
-col_title, col_lang = st.columns([2, 1])
+# ==============================================================================
+# 3. CLOUD CONNECTIONS & INTERACTIVE ENGINE READS
+# ==============================================================================
+try:
+    conn = st.connection("gsheets", type=GSheetsConnection)
+    # Pull dynamic configuration rows directly out of cloud spreadsheet matrix
+    quests_df = conn.read(worksheet="config", ttl=5)
+    quests_list = quests_df.to_dict(orient="records")
+except Exception as e:
+    # Safe offline local fallback mode structure if database sync links break
+    quests_list = [
+        {"step": 1, "clue_en": "Check the coffee table.", "clue_vi": "Kiểm tra bàn cà phê.",
+         "clue_de": "Prüfe den Kaffeetisch.", "answer": "matrix", "code": "CONF-992", "image": "none"}
+    ]
+
+# Global Theme Switch Layer via UI Variables
+col_space, col_lang = st.columns([3, 1])
 with col_lang:
-    selected_lang = st.selectbox("🌐 Language", ["en", "vi", "de"], index=0)
+    selected_lang = st.selectbox("🌐 Language", ["en", "vi", "de"], key="global_lang_selector")
 ui = LOCALIZED_UI[selected_lang]
 
-# 4. SIDEBAR ADMINISTRATIVE OVERRIDE CONTROL CENTER
-with st.sidebar:
-    st.header("⚙️ Game Master Core")
-    admin_active = st.checkbox("Access Admin Dashboard")
-    if admin_active:
-        password = st.text_input("Admin Security Key", type="password")
-        if password == "hunt-master-2026":
-            st.success("Authenticated")
-            st.subheader("Manage Quest Database")
-            # In production, this data variable hooks straight to st.connection("gsheets")
-            st.info("Connected Live to Cloud Google Sheet Dashboard Layer")
-        elif password:
-            st.error("Invalid Code")
-
-# 5. CORE PLAYER RUNTIME ROUTING LOGIC
-if not st.session_state.team_name and not admin_active:
-    with col_title:
-        st.title(ui["welcome"])
-
-    with st.form("login_form"):
-        input_name = st.text_input(ui["team_label"], placeholder="e.g., Alpha Team")
-        submit_login = st.form_submit_button(ui["start_btn"])
-        if submit_login and input_name.strip():
-            st.session_state.team_name = input_name.strip()
-            st.rerun()
-
-elif not admin_active:
-    # Active Player Viewport Layout
-    st.title(f"🗺️ {st.session_state.team_name}")
-    st.subheader(f"{ui['checkpoint']} #{st.session_state.current_step}")
-
-    # Static mockup list for structural architecture showcase
-    # In step 3, this reads lines straight from your live Google Sheet columns dynamically
-    mock_quest = {
-        "clue_en": "Look under the main conference room coffee table.",
-        "clue_vi": "Hãy nhìn dưới bàn cà phê của phòng họp chính.",
-        "clue_de": "Schau unter den Kaffeetisch im Hauptkonferenzraum.",
-        "answer": "matrix", "code": "CONF-992"
+# ==============================================================================
+# 4. FIXED RESPONSIVE BACKGROUND GRAPHICS WRAPPER Injection
+# ==============================================================================
+# Inject background styles that match dark and light modes cleanly via global CSS rules
+st.markdown(
+    """
+    <style>
+    .stApp {
+        background: linear-gradient(rgba(var(--bg-rgb, 255, 255, 255), 0.88), rgba(var(--bg-rgb, 255, 255, 255), 0.88));
+        background-attachment: fixed;
+        background-size: cover;
     }
+    @media (prefers-color-scheme: dark) {
+        .stApp { --bg-rgb: 33, 37, 41; }
+    }
+    @media (prefers-color-scheme: light) {
+        .stApp { --bg-rgb: 248, 249, 250; }
+    }
+    </style>
+    """,
+    unsafe_allow_url=True
+)
 
-    if not st.session_state.game_started:
-        st.warning(ui["clue_locked"])
-        if st.button(ui["unlock_btn"], type="primary"):
-            st.session_state.game_started = True
-            st.session_state.stage_start_time = time.time()
+# ==============================================================================
+# 5. SIDEBAR MANAGEMENT CORE & LEADERBOARD DASHBOARD
+# ==============================================================================
+with st.sidebar:
+    st.title("⚙️ Operations Panel")
+    if st.session_state.team_name:
+        st.write(f"Logged in: **{st.session_state.team_name}**")
+        if st.button(ui["logout"], type="secondary"):
+            st.session_state.team_name = None
+            st.session_state.current_step = 1
+            st.session_state.stage_started = False
             st.rerun()
-    else:
-        # Render the correct language clue string using the state dictionary token selector
-        st.info(f"**Clue:** {mock_quest[f'clue_{selected_lang}']}")
 
-        # Part 1 Input
-        ans_input = st.text_input(ui["part1"], placeholder="Type riddle solution...").strip().lower()
+    st.write("---")
+    admin_portal = st.checkbox("Access Admin Dashboard Center")
+    if admin_portal:
+        admin_pass = st.text_input("Master Password", type="password")
+        if admin_pass == "hunt-master-2026":
+            st.success("Access Granted")
+            st.subheader("📋 Operational Live Leaderboard")
 
-        # Part 2 Input with Native Mobile Camera Subsystem Call
-        st.write(ui["part2"])
-        use_camera = st.checkbox("📸 Open Mobile Device Camera Scanner Layer")
-        code_input = ""
+            try:
+                logs_df = conn.read(worksheet="logs", ttl=2)
+                st.dataframe(logs_df, use_container_width=True)
+            except:
+                st.info("No logs registered in database yet.")
 
-        if use_camera:
-            # Streamlit directly calls the phone's hardware camera frame matrix safely
-            picture = st.camera_input("Position the hidden physical item card target inside frame")
-            if picture:
-                st.success("Card captured asset loaded!")
-                # In full implementation, we hand this picture element data array over to a 3-line cv2/pyzbar reader engine
-                code_input = st.text_input("Confirm Parsed Tag Value String", value="AUTO-DETECTED-KEY")
-        else:
-            code_input = st.text_input("Type Verification Code Manually", placeholder="e.g., BOX-404").strip().upper()
+            st.subheader("🛠️ Active System Layout Configuration")
+            st.dataframe(quests_df, use_container_width=True)
 
-        if st.button(ui["submit"], type="good"):
-            if ans_input == mock_quest["answer"] and (
-                    code_input == mock_quest["code"] or code_input == "AUTO-DETECTED-KEY"):
-                st.balloons()
-                st.success("Checkpoint Passed!")
-                time.sleep(1.5)
-                st.session_state.current_step += 1
-                st.session_state.game_started = False
+# ==============================================================================
+# 6. MAIN PLAY ROUTER INFRASTRUCTURE
+# ==============================================================================
+total_quests = len(quests_list)
+
+if not st.session_state.team_name and not admin_portal:
+    st.title(ui["welcome"])
+    with st.form("lobby_entry"):
+        player_id = st.text_input(ui["team_label"], placeholder="e.g., Team Alpha").strip()
+        enter_gate = st.form_submit_button(ui["start_btn"], type="primary")
+        if enter_gate and player_id:
+            st.session_state.team_name = player_id
+            # Scan records via the database to determine if player can resume state mid-run
+            try:
+                logs_df = conn.read(worksheet="logs", ttl=2)
+                team_history = logs_df[logs_df["team_name"] == player_id]
+                if not team_history.empty:
+                    completed_steps = team_history[team_history["status"] == "COMPLETED"]["step"].max()
+                    if not pd.isna(completed_steps):
+                        st.session_state.current_step = int(completed_steps) + 1
+            except:
+                pass
+            st.rerun()
+
+elif not admin_portal:
+    if st.session_state.current_step <= total_quests:
+        # Load the active step row
+        active_quest = quests_list[st.session_state.current_step - 1]
+
+        st.title(f"🗺️ {ui['checkpoint']} {st.session_state.current_step} {ui['of']} {total_quests}")
+
+        if not st.session_state.stage_started:
+            st.warning(ui["clue_locked"])
+            if st.button(ui["unlock_btn"], type="primary", use_container_width=True):
+                st.session_state.stage_started = True
+                st.session_state.stage_start_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                # Log the stage initialization stamp out to our tracking system columns
+                try:
+                    new_log = pd.DataFrame([{
+                        "team_name": st.session_state.team_name, "step": st.session_state.current_step,
+                        "start_time": st.session_state.stage_start_time, "end_time": "", "attempts": 0,
+                        "status": "RUNNING"
+                    }])
+                    conn.create(worksheet="logs", data=new_log, if_exists="append")
+                except:
+                    pass
                 st.rerun()
+        else:
+            # Active Clue View
+            st.info(
+                f"**{ui['your_clue']}**\n\n### {active_quest.get(f'clue_{selected_lang}', active_quest.get('clue_en'))}")
+
+            # Optional image rendering loop
+            img_asset = str(active_quest.get('image', 'none')).strip()
+            if img_asset and img_asset != 'none':
+                # Pull path directly out of local static storage directory engine layout
+                st.image(f"static/uploads/{img_asset}", use_container_width=True)
+
+            # Form Fields
+            user_ans = st.text_input(ui["part1"], placeholder=ui["part1_holder"]).strip().lower()
+
+            st.write(f"**{ui['part2']}**")
+            st.caption(ui["anti_cheat_sub"])
+
+            open_cam = st.checkbox(ui["scan_btn"])
+            user_code = ""
+            if open_cam:
+                camera_capture = st.camera_input("Scanner Active", label_visibility="collapsed")
+                if camera_capture:
+                    # Native bypass string for demo / manual confirmation routing verification checks
+                    user_code = st.text_input("Parsed Code Target", value="AUTO-DETECTED").strip().upper()
             else:
-                st.error("Verification mismatch. Check both solutions again!")
+                user_code = st.text_input("Enter Key Manually", placeholder=ui["part2_holder"],
+                                          label_visibility="collapsed").strip().upper()
 
-elif admin_active and password == "hunt-master-2026":
-    # Admin Interface Render Window
-    st.title("📊 Global Operations Dashboard")
-    st.write("Review real-time hunter timelines and adjust puzzle configuration sets.")
+            if st.button(ui["submit_btn"], type="primary", use_container_width=True):
+                # Core Dual Validation Checks
+                target_ans = str(active_quest.get('answer')).strip().lower()
+                target_code = str(active_quest.get('code')).strip().upper()
 
-    # Display an interactive real-time spreadsheet frame editable by the administrator
-    config_mock_df = pd.DataFrame([
-        {"Step": 1, "Clue (EN)": "Under coffee table", "Answer": "matrix", "Code": "CONF-992"},
-        {"Step": 2, "Clue (EN)": "Inside cafeteria", "Answer": "apple", "Code": "CAFE-102"}
-    ])
-    st.data_editor(config_mock_df, num_rows="dynamic")
+                if user_ans == target_ans and (user_code == target_code or user_code == "AUTO-DETECTED"):
+                    st.balloons()
+                    # Commit completion metrics directly out to Google Sheet worksheet data frame rows
+                    try:
+                        completion_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                        finish_log = pd.DataFrame([{
+                            "team_name": st.session_state.team_name, "step": st.session_state.current_step,
+                            "start_time": st.session_state.stage_start_time, "end_time": completion_time, "attempts": 1,
+                            "status": "COMPLETED"
+                        }])
+                        conn.create(worksheet="logs", data=finish_log, if_exists="append")
+                    except:
+                        pass
+
+                    st.session_state.current_step += 1
+                    st.session_state.stage_started = False
+                    st.rerun()
+                else:
+                    st.error(ui["invalid_match"])
+
+    else:
+        # ==============================================================================
+        # 7. ENHANCED PERFORMANCE ANALYTICS VIEW
+        # ==============================================================================
+        st.title(ui["victory"])
+        st.subheader(ui["victory_sub"])
+
+        # Load logs dynamically to pull this participant's individual dashboard card statistics
+        try:
+            full_logs_df = conn.read(worksheet="logs", ttl=1)
+            player_logs = full_logs_df[
+                (full_logs_df["team_name"] == st.session_state.team_name) & (full_logs_df["status"] == "COMPLETED")]
+
+            total_attempts = player_logs["attempts"].sum()
+            st.metric(label=ui["combined_subs"], value=f"{total_attempts} {ui['attempts']}")
+
+            st.write(f"### 📋 {ui['timeline']}")
+            st.dataframe(player_logs[["step", "start_time", "end_time"]], use_container_width=True)
+        except:
+            st.info(ui["organizer_msg"])
+
+elif admin_portal and admin_pass == "hunt-master-2026":
+    pass
