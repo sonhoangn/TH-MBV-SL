@@ -97,7 +97,11 @@ quests_list = [
     {
         "step": 1,
         "clue_en": "Look to the sky, but don’t get lost. My three points cover land, sea, and air, no matter the cost. What am I?",
-        "clue_vi": "Nhìn lên bầu trời nhưng đừng để lạc lối. Ba đỉnh của tôi làm chủ cả đất liền, đường biển và bầu trời. Tôi là gì?",
+        "clue_vi": "Ngước nhìn tinh tú giữa trời,"
+                   "Ba phương chinh phục, chẳng rời bước chân."
+                   "Đất, sông, không phận bước gần,"
+                   "Biểu tượng tỏa sáng, vạn lần uy nghi."
+                   "Tôi là gì?",
         "clue_de": "Blicke zum Himmel, doch verirre dich nicht. Meine drei Zacken weisen den Weg über Land, See und Luft – elegant und schlicht. Was bin ich?",
         "img_url": "https://group.mercedes-benz.com/bilder/misc/visuals-stern/mb-stern-2025-04-w1680xh945-cutout.jpg",
         "code": "574R"
@@ -105,7 +109,11 @@ quests_list = [
     {
         "step": 2,
         "clue_en": "Three letters that turn a luxury cruiser into a roaring track beast. Handcrafted by one master, from the west to the east. What am I? (hint: One Man, One Engine)",
-        "clue_vi": "Ba chữ cái biến một chiếc xe sang êm ái thành một con quái thú gầm vang trên đường đua. Được chế tác thủ công bởi một kỹ sư duy nhất. Tôi là gì? (gợi ý: hãy nhớ đến triết lý Một người, một động cơ.)",
+        "clue_vi": "Ba chữ tạo nên uy quyền,"
+                   "Một người, một máy, trọn miền khát khao."
+                   "Đường đua gầm thét vút cao,"
+                   "Khắc ghi đẳng cấp, tự hào gọi tên."
+                   "Tôi là gì? (gợi ý: hãy nhớ đến triết lý Một người, một động cơ - One Man, One Engine.)",
         "clue_de": "Drei Buchstaben machen aus einer Luxuslimousine ein brüllendes Rennstreckenbiest. Von einem Meister von Hand gefertigt, von West bis Ost. Was bin ich? (Hinweis: Ein Mann, ein Motor)",
         "img_url": "https://di-uploads-pod30.dealerinspire.com/budsnailmotorcarsltd/uploads/2020/05/AMG-Handcrafted-Engine-Production-M139-Engine.jpg",
         "code": "AM9"
@@ -113,7 +121,11 @@ quests_list = [
     {
         "step": 3,
         "clue_en": "Invented by Benz engineers to keep you in line, I pulse when you panic and save you just in time. I stop the wheels from locking tight. What am I?",
-        "clue_vi": "Được các kỹ sư Benz phát minh để giữ bạn an toàn. Tôi sẽ nhấp nhả liên tục khi bạn phanh gấp, giúp bánh xe không bị bó cứng. Tôi là gì?",
+        "clue_vi": "Benz dành tâm huyết tạo nên,"
+                   "Giúp người cầm lái vững bền trên xe."
+                   "Phanh gấp bánh chẳng hề tê,"
+                   "Giữ cho vững lái, tràn trề niềm vui. "
+                   "Tôi là gì?",
         "clue_de": "Von Benz-Ingenieuren entwickelt, um dich in der Spur zu halten. Ich pulse bei Vollbremsung und rette dich in der Not, indem ich das Blockieren der Räder verhindere. Was bin ich?",
         "img_url": "https://500sec.com/wp-content/uploads/2009/12/462255_788468_3661_2880_96067472184-37.jpg",
         "code": "48S"
