@@ -217,6 +217,7 @@ if st.session_state.admin_override:
     st.subheader("📋 Operational Live Leaderboard Log File")
 
     try:
+        # Keep this as a plain string inside conn.query!
         logs_df = conn.query("""
             SELECT 
                 team_name as 'Team/Player ID', 
@@ -246,7 +247,7 @@ elif not st.session_state.team_name:
             player_id = st.text_input(ui["team_label"]).strip()
             enter_gate = st.form_submit_button(ui["start_btn"], type="primary", use_container_width=True)
             if enter_gate and player_id:
-                history_df = conn.query(text("SELECT * FROM hunt_logs WHERE team_name = :team;"), params={"team": player_id})
+                history_df = conn.query("SELECT * FROM hunt_logs WHERE team_name = :team;", params={"team": player_id})
 
                 if not history_df.empty:
                     st.session_state.team_name = player_id
@@ -279,8 +280,7 @@ elif not st.session_state.team_name:
                                                         use_container_width=True)
 
             if submit_registration and reg_uid:
-                check_exist = conn.query(text("SELECT 1 FROM hunt_logs WHERE team_name = :team LIMIT 1;"),
-                                         params={"team": reg_uid})
+                check_exist = conn.query("SELECT 1 FROM hunt_logs WHERE team_name = :team LIMIT 1;", params={"team": reg_uid})
                 if not check_exist.empty:
                     st.error("This Login ID is already taken! Choose another one.")
                 else:
@@ -386,8 +386,7 @@ else:
         st.title(ui["victory"])
         st.subheader(ui["victory_sub"])
 
-        history_df = conn.query(text("SELECT * FROM hunt_logs WHERE team_name = :team AND status = 'COMPLETED';"),
-                                params={"team": st.session_state.team_name})
+        history_df = conn.query("SELECT * FROM hunt_logs WHERE team_name = :team AND status = 'COMPLETED';", params={"team": st.session_state.team_name})
 
         if not history_df.empty:
             records = []
