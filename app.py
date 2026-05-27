@@ -19,8 +19,7 @@ def init_db():
     """Forces a physical database layout file reset to wipe cached schema mismatches"""
     db_file = "streamlit_app.db"
 
-    # Toggle to False once your first registration passes successfully!
-    FORCE_WIPE_OUT = True
+    FORCE_WIPE_OUT = False
 
     if FORCE_WIPE_OUT and os.path.exists(db_file):
         try:
@@ -88,8 +87,6 @@ BG_URL = "https://group.mercedes-benz.com/bilder/innovationen/specials/140-years
 # ==============================================================================
 # ⚠️ QUESTION DATABASE WITH INTEGRATED REMOTE IMAGE URL SLOTS
 # ==============================================================================
-# You can use any public web link (Imgur, Postimages, corporate links, GitHub raw assets, etc.)
-# If a station doesn't need an image, simply leave "img_url": "" or None
 quests_list = [
     {
         "step": 1,
@@ -249,7 +246,7 @@ elif not st.session_state.team_name:
             player_id = st.text_input(ui["team_label"]).strip()
             enter_gate = st.form_submit_button(ui["start_btn"], type="primary", use_container_width=True)
             if enter_gate and player_id:
-                history_df = conn.query(f"SELECT * FROM hunt_logs WHERE team_name = :team;", params={"team": player_id})
+                history_df = conn.query(text("SELECT * FROM hunt_logs WHERE team_name = :team;"), params={"team": player_id})
 
                 if not history_df.empty:
                     st.session_state.team_name = player_id
@@ -265,8 +262,7 @@ elif not st.session_state.team_name:
                     running_steps = history_df[history_df["status"] == "RUNNING"]["step"].tolist()
                     if running_steps and (not completed_steps or max(running_steps) > max(completed_steps)):
                         st.session_state.stage_started = True
-                        st.session_state.stage_start_time = history_df[history_df["status"] == "RUNNING"].iloc[-1][
-                            "start_time"]
+                        st.session_state.stage_start_time = history_df[history_df["status"] == "RUNNING"].iloc[-1]["start_time"]
                     else:
                         st.session_state.stage_started = False
                     st.rerun()
@@ -283,7 +279,7 @@ elif not st.session_state.team_name:
                                                         use_container_width=True)
 
             if submit_registration and reg_uid:
-                check_exist = conn.query(f"SELECT 1 FROM hunt_logs WHERE team_name = :team LIMIT 1;",
+                check_exist = conn.query(text("SELECT 1 FROM hunt_logs WHERE team_name = :team LIMIT 1;"),
                                          params={"team": reg_uid})
                 if not check_exist.empty:
                     st.error("This Login ID is already taken! Choose another one.")
@@ -331,11 +327,11 @@ else:
                 st.session_state.stage_started = True
                 st.session_state.stage_start_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-                reg_meta_df = conn.query(
-                    "SELECT player_type, group_members FROM hunt_logs WHERE team_name = :team AND status = 'REGISTERED' LIMIT 1;",
-                    params={"team": st.session_state.team_name})
-                pt = reg_meta_df.iloc[0]["player_type"] if not reg_meta_df.empty else "Unknown"
-                gm = reg_meta_df.iloc[0]["group_members"] if not reg_meta_df.empty else "Unknown"
+                # Unified execution context block to prevent thread deadlocks
+                with conn.session as session:
+                    res = session.execute(text("SELECT player_type, group_members FROM hunt_logs WHERE team_name = :team AND status = 'REGISTERED' LIMIT 1;"), {"team": st.session_state.team_name}).fetchone()
+                    pt = res[0] if res else "Unknown"
+                    gm = res[1] if res else "Unknown"
 
                 push_log_to_db(st.session_state.team_name, st.session_state.current_step,
                                st.session_state.stage_start_time, "", 0, "RUNNING", player_type=pt, members=gm)
@@ -345,7 +341,6 @@ else:
             st.info(f"**{ui['your_clue']}**\n\n### {current_clue_text}")
 
             # 🖼️ DYNAMIC CLUE IMAGE VIEWER
-            # If the current quest dictionary has an image URL, compile it on screen natively
             img_target = active_quest.get("img_url", "")
             if img_target:
                 st.image(img_target, caption=f"{ui['checkpoint']} {st.session_state.current_step} Clue Visual Asset",
@@ -371,11 +366,11 @@ else:
                     st.balloons()
                     end_time_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-                    reg_meta_df = conn.query(
-                        "SELECT player_type, group_members FROM hunt_logs WHERE team_name = :team AND status = 'REGISTERED' LIMIT 1;",
-                        params={"team": st.session_state.team_name})
-                    pt = reg_meta_df.iloc[0]["player_type"] if not reg_meta_df.empty else "Unknown"
-                    gm = reg_meta_df.iloc[0]["group_members"] if not reg_meta_df.empty else "Unknown"
+                    # Unified execution context block to prevent thread deadlocks
+                    with conn.session as session:
+                        res = session.execute(text("SELECT player_type, group_members FROM hunt_logs WHERE team_name = :team AND status = 'REGISTERED' LIMIT 1;"), {"team": st.session_state.team_name}).fetchone()
+                        pt = res[0] if res else "Unknown"
+                        gm = res[1] if res else "Unknown"
 
                     push_log_to_db(st.session_state.team_name, st.session_state.current_step,
                                    st.session_state.stage_start_time, end_time_str, 1, "COMPLETED", player_type=pt,
@@ -391,7 +386,7 @@ else:
         st.title(ui["victory"])
         st.subheader(ui["victory_sub"])
 
-        history_df = conn.query(f"SELECT * FROM hunt_logs WHERE team_name = :team AND status = 'COMPLETED';",
+        history_df = conn.query(text("SELECT * FROM hunt_logs WHERE team_name = :team AND status = 'COMPLETED';"),
                                 params={"team": st.session_state.team_name})
 
         if not history_df.empty:
