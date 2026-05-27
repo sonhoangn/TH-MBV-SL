@@ -7,7 +7,7 @@ from streamlit_gsheets import GSheetsConnection
 # ==============================================================================
 # 1. GLOBAL INTERFACE SETUP & CUSTOM STYLES
 # ==============================================================================
-st.set_page_config(page_title="Corporate Treasure Hunt v2", page_icon="🗺️", layout="centered")
+st.set_page_config(page_title="MBV 140 Treasure Hunt", page_icon="🗺️", layout="centered")
 
 # Initialize persistent session tracking structures
 if "team_name" not in st.session_state:
@@ -300,7 +300,8 @@ elif not st.session_state.team_name:
     with col_right:
         with st.expander("🛠️ System Console"):
             admin_pass = st.text_input("Master Password", type="password", key="main_admin_pass")
-            if admin_pass == "hunt-master-2026":
+            # CHANGED: Check against st.secrets instead of a raw string
+            if admin_pass == st.secrets["admin_password"]:
                 st.session_state.admin_override = True
                 st.rerun()
 
