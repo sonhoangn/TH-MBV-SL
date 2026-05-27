@@ -73,18 +73,19 @@ LOCALIZED_UI = {
 # ==============================================================================
 # 3. CLOUD CONNECTIONS & LIVE BACKGROUND FETCH
 # ==============================================================================
-bg_url = ""  # Fallback default blank transparent layer
+bg_url = "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=1200"  # Safe, verified default abstract background
 try:
     conn = st.connection("gsheets", type=GSheetsConnection)
     quests_df = conn.read(worksheet="config", ttl=2)
     quests_list = quests_df.to_dict(orient="records")
 
-    # Attempt to load custom live background URL saved inside the logs sheet matrix
-    global_logs = conn.read(worksheet="logs", ttl=2)
-    bg_row = global_logs[global_logs["status"] == "BACKGROUND"]
+    # Read the data worksheet directly into a local state matrix
+    current_logs_fetch = conn.read(worksheet="logs", ttl=2)
+    bg_row = current_logs_fetch[current_logs_fetch["status"] == "BACKGROUND"]
     if not bg_row.empty:
         bg_url = str(bg_row.iloc[0]["start_time"]).strip()
 except Exception as e:
+    current_logs_fetch = pd.DataFrame()  # Fallback empty frame to prevent local testing crashes
     quests_list = [
         {"step": 1, "clue_en": "Check the coffee table.", "clue_vi": "Kiểm tra bàn cà phê.",
          "clue_de": "Prüfe den Kaffeetisch.", "answer": "matrix", "code": "CONF-992", "image_url": ""}
@@ -99,29 +100,27 @@ ui = LOCALIZED_UI[selected_lang]
 # ==============================================================================
 # 4. LIVE CUSTOMIZABLE BACKGROUND GRAPHICS ENGINE
 # ==============================================================================
-# Safely injects the background URL without breaking the media query brackets
-st.markdown(
-    """
-    <style>
-    .stApp {{
-        background: linear-gradient(rgba(var(--bg-rgb, 255, 255, 255), 0.85), rgba(var(--bg-rgb, 255, 255, 255), 0.85)), 
-                    url("{url}");
-        background-attachment: fixed;
-        background-size: cover;
-        background-position: center;
-    }}
-    @media (prefers-color-scheme: dark) {{ .stApp {{ --bg-rgb: 33, 37, 41; }} }}
-    @media (prefers-color-scheme: light) {{ .stApp {{ --bg-rgb: 248, 249, 250; }} }}
+# FIXED: Using a clean injection template to guarantee CSS reads the string URL without escaping brackets
+css_style = f"""
+<style>
+.stApp {{
+    background: linear-gradient(rgba(var(--bg-rgb, 255, 255, 255), 0.85), rgba(var(--bg-rgb, 255, 255, 255), 0.85)), 
+                url("{bg_url}");
+    background-attachment: fixed;
+    background-size: cover;
+    background-position: center;
+}}
+@media (prefers-color-scheme: dark) {{ .stApp {{ --bg-rgb: 33, 37, 41; }} }}
+@media (prefers-color-scheme: light) {{ .stApp {{ --bg-rgb: 248, 249, 250; }} }}
 
-    #MainMenu {{visibility: hidden;}}
-    footer {{visibility: hidden;}}
-    .stDeployButton {{display:none;}}
-    .stAppHeader {{ display: none !important; }}
-    div[data-testid="stManageAppPageNavFloatingActionButton"] {{ display: none !important; }}
-    </style>
-    """.format(url=bg_url),
-    unsafe_allow_html=True
-)
+#MainMenu {{visibility: hidden;}}
+footer {{visibility: hidden;}}
+.stDeployButton {{display:none;}}
+.stAppHeader {{ display: none !important; }}
+div[data-testid="stManageAppPageNavFloatingActionButton"] {{ display: none !important; }}
+</style>
+"""
+st.markdown(css_style, unsafe_allow_html=True)
 
 # ==============================================================================
 # 5. SIDEBAR DISCONNECT CONTROL
@@ -158,26 +157,23 @@ if st.session_state.admin_override:
 
         if save_bg_btn and new_bg:
             try:
-                # 1. Prepare the single configuration row as a clean DataFrame
+                # 1. Build the new settings data row row cleanly
                 bg_update_df = pd.DataFrame([{
-                    "team_name": "SYSTEM_SETTINGS",
-                    "step": 0,
-                    "start_time": new_bg.strip(),
-                    "end_time": "SYSTEM",
-                    "attempts": 0,
-                    "status": "BACKGROUND"
+                    "team_name": "SYSTEM_SETTINGS", "step": 0, "start_time": new_bg.strip(),
+                    "end_time": "SYSTEM", "attempts": 0, "status": "BACKGROUND"
                 }])
 
-                # 2. Filter out any existing BACKGROUND rows from your current global logs variable
-                clean_logs_df = global_logs[global_logs["status"] != "BACKGROUND"]
+                # 2. FIXED: Filter out previous background rows using the accurate variable name
+                if not current_logs_fetch.empty:
+                    clean_logs_df = current_logs_fetch[current_logs_fetch["status"] != "BACKGROUND"]
+                    combined_logs = pd.concat([clean_logs_df, bg_update_df], ignore_index=True)
+                else:
+                    combined_logs = bg_update_df
 
-                # 3. Concatenate the clean historical data with your new background row
-                combined_logs = pd.concat([clean_logs_df, bg_update_df], ignore_index=True)
-
-                # 4. FIXED: Use .update() instead of .create(if_exists="replace")
+                # 3. Commit the updated block back to Google Sheets
                 conn.update(worksheet="logs", data=combined_logs)
 
-                st.success("App appearance configuration flushed to Cloud! Reloading style definitions...")
+                st.success("App appearance updated! Reloading layout layers...")
                 time.sleep(1)
                 st.rerun()
             except Exception as e:
