@@ -2,6 +2,8 @@ import os
 import streamlit as st
 import pandas as pd
 import time
+import sqlite3
+from sqlalchemy import text
 from datetime import datetime
 
 # ==============================================================================
@@ -13,13 +15,11 @@ st.set_page_config(page_title="MBV 140Y Treasure Hunt", page_icon="🗺️", lay
 conn = st.connection("local_db" if st.runtime.exists() and not st.get_option("server.port") else "streamlit_db",
                      type="sql")
 
-
 def init_db():
     """Forces a physical database layout file reset to wipe cached schema mismatches"""
     db_file = "streamlit_app.db"
 
-    # ⚠ONCE-OFF RESET TRIGGER: Change this to True to force delete the old corrupt file layout.
-    # After  app reloads cleanly once in the browser, flip it back to False
+    # Toggle to False once your first registration passes successfully!
     FORCE_WIPE_OUT = True
 
     if FORCE_WIPE_OUT and os.path.exists(db_file):
@@ -28,8 +28,7 @@ def init_db():
         except Exception:
             pass
 
-    # Re-initialize the clean database using native sqlite3 execution context
-    import sqlite3
+    # Initialize via native sqlite3 to safely clear the st.connection cache layout
     with sqlite3.connect(db_file) as native_conn:
         cursor = native_conn.cursor()
         cursor.execute("""
@@ -51,12 +50,12 @@ def init_db():
 
 
 def push_log_to_db(team, step, start, end, attempts, status, player_type="", members="", notes=""):
-    """Synchronously inserts state records into the centralized cloud database"""
+    """Synchronously inserts state records using modern text() execution parameters"""
     with conn.session as session:
-        session.execute("""
+        session.execute(text("""
             INSERT INTO hunt_logs (team_name, player_type, group_members, step, start_time, end_time, attempts, status, notes, timestamp)
             VALUES (:team, :ptype, :members, :step, :start, :end, :attempts, :status, :notes, :ts);
-        """, {
+        """), {
             "team": str(team), "ptype": str(player_type), "members": str(members),
             "step": int(step), "start": str(start), "end": str(end),
             "attempts": int(attempts), "status": str(status), "notes": str(notes),
