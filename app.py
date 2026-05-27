@@ -18,6 +18,8 @@ if "stage_started" not in st.session_state:
     st.session_state.stage_started = False
 if "stage_start_time" not in st.session_state:
     st.session_state.stage_start_time = None
+if "admin_override" not in st.session_state:
+    st.session_state.admin_override = False
 
 # ==============================================================================
 # 2. LOCALIZED LINGUISTIC DICTIONARY (NATURAL & IDIOMATIC)
@@ -126,11 +128,9 @@ LOCALIZED_UI = {
 # ==============================================================================
 try:
     conn = st.connection("gsheets", type=GSheetsConnection)
-    # Pull dynamic configuration rows directly out of cloud spreadsheet matrix
     quests_df = conn.read(worksheet="config", ttl=5)
     quests_list = quests_df.to_dict(orient="records")
 except Exception as e:
-    # Safe offline local fallback mode structure if database sync links break
     quests_list = [
         {"step": 1, "clue_en": "Check the coffee table.", "clue_vi": "Kiểm tra bàn cà phê.",
          "clue_de": "Prüfe den Kaffeetisch.", "answer": "matrix", "code": "CONF-992", "image": "none"}
@@ -148,7 +148,6 @@ ui = LOCALIZED_UI[selected_lang]
 st.markdown(
     """
     <style>
-    /* Custom Background Layers */
     .stApp {
         background: linear-gradient(rgba(var(--bg-rgb, 255, 255, 255), 0.88), rgba(var(--bg-rgb, 255, 255, 255), 0.88));
         background-attachment: fixed;
@@ -160,28 +159,18 @@ st.markdown(
     @media (prefers-color-scheme: light) {
         .stApp { --bg-rgb: 248, 249, 250; }
     }
-
-    /* CLEAN UP STANDARD DEPLOYMENT BADGES & FLOATING BUTTONS */
-    #MainMenu {visibility: hidden;}         /* Hides top-right hamburger menu */
-    footer {visibility: hidden;}            /* Hides bottom footer branding text */
-    .stDeployButton {display:none;}        /* Hides top deployment state triggers */
-
-    /* 🛠️ HIDES THE ENTIRE TOP STREAMLIT HEADER (GitHub link, Fork button, etc.) */
-    .stAppHeader {
-        display: none !important;
-    }
-
-    /* Forces the developer "Manage App" floating button drawer to disappear completely */
-    div[data-testid="stManageAppPageNavFloatingActionButton"] {
-        display: none !important;
-    }
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+    .stDeployButton {display:none;}
+    .stAppHeader { display: none !important; }
+    div[data-testid="stManageAppPageNavFloatingActionButton"] { display: none !important; }
     </style>
     """,
     unsafe_allow_html=True
 )
 
 # ==============================================================================
-# 5. SIDEBAR MANAGEMENT CORE & LEADERBOARD DASHBOARD
+# 5. SIDEBAR MANAGEMENT CORE (ONLY DISPLAYED TO ACTIVE LOGGED-IN PLAYERS)
 # ==============================================================================
 with st.sidebar:
     st.title("⚙️ Operations Panel")
@@ -193,43 +182,41 @@ with st.sidebar:
             st.session_state.stage_started = False
             st.rerun()
 
-    st.write("---")
-    admin_portal = st.checkbox("Access Admin Dashboard Center")
-    if admin_portal:
-        admin_pass = st.text_input("Master Password", type="password")
-        if admin_pass == "hunt-master-2026":
-            st.success("Access Granted")
-            st.subheader("📋 Operational Live Leaderboard")
-
-            try:
-                logs_df = conn.read(worksheet="logs", ttl=2)
-                st.dataframe(logs_df, use_container_width=True)
-            except:
-                st.info("No logs registered in database yet.")
-
-            st.subheader("🛠️ Active System Layout Configuration")
-            # FIX: Check if quests_df exists as a valid pandas DataFrame; if not, wrap the fallback list dynamically
-            if 'quests_df' in locals() or 'quests_df' in globals():
-                st.dataframe(quests_df, use_container_width=True)
-            else:
-                # Convert the fallback data array on the fly so it renders cleanly
-                fallback_df = pd.DataFrame(quests_list)
-                st.dataframe(fallback_df, use_container_width=True)
-
 # ==============================================================================
-# 6. MAIN PLAY ROUTER INFRASTRUCTURE
+# 6. GLOBAL OPERATIONS VIEWPORT ROUTING CONTROL
 # ==============================================================================
 total_quests = len(quests_list)
 
-if not st.session_state.team_name and not admin_portal:
+# PRIORITY ROUTE 1: ADMIN CONTROL OVERRIDE INTERFACE
+if st.session_state.admin_override:
+    st.title("📊 Global Operations Dashboard")
+    st.write("Review real-time hunter timelines and adjust puzzle configuration sets.")
+
+    if st.button("⬅️ Exit Admin Dashboard & Return to Game Lobby", type="secondary", use_container_width=True):
+        st.session_state.admin_override = False
+        st.rerun()
+
+    st.markdown("---")
+    st.subheader("📋 Operational Live Leaderboard")
+    try:
+        logs_df = conn.read(worksheet="logs", ttl=2)
+        st.dataframe(logs_df, use_container_width=True)
+    except:
+        st.info("No logs registered in database yet.")
+
+    st.subheader("🛠️ Active System Layout Configuration")
+    if 'quests_df' in locals() or 'quests_df' in globals():
+        st.dataframe(quests_df, use_container_width=True)
+    else:
+        fallback_df = pd.DataFrame(quests_list)
+        st.dataframe(fallback_df, use_container_width=True)
+
+# PRIORITY ROUTE 2: LOBBY REGISTRATION GATE (IF PLAYER NOT LOGGED IN)
+elif not st.session_state.team_name:
     st.title(ui["welcome"])
 
-    # Render modern tab dividers to split Login vs Registration workflows cleanly
     tab_login, tab_register = st.tabs(["🔐 Log In", "📝 Register New Team/Player"])
 
-    # --------------------------------------------------------------------------
-    # TAB A: PLAYER LOGIN
-    # --------------------------------------------------------------------------
     with tab_login:
         with st.form("lobby_entry"):
             player_id = st.text_input(ui["team_label"], placeholder="e.g., Team Alpha", key="login_uid").strip()
@@ -237,7 +224,6 @@ if not st.session_state.team_name and not admin_portal:
 
             if enter_gate and player_id:
                 st.session_state.team_name = player_id
-                # Check database to see if this team already has active progress logs
                 try:
                     logs_df = conn.read(worksheet="logs", ttl=2)
                     team_history = logs_df[logs_df["team_name"] == player_id]
@@ -249,11 +235,7 @@ if not st.session_state.team_name and not admin_portal:
                     pass
                 st.rerun()
 
-    # --------------------------------------------------------------------------
-    # TAB B: DYNAMIC MULTI-MODE REGISTRATION SYSTEM
-    # --------------------------------------------------------------------------
     with tab_register:
-        # Toggle dynamically changes form inputs based on team structure
         reg_mode = st.radio(
             "Select Registration Profile Type",
             ["Individual Solo Player", "Group Team Roster"],
@@ -266,13 +248,11 @@ if not st.session_state.team_name and not admin_portal:
                 reg_uid = st.text_input("Choose Unique Login ID", placeholder="e.g., NGHOAN1").strip()
                 reg_display = st.text_input("Full Name", placeholder="e.g., Son Hoang Nguyen").strip()
                 roster_meta = "Solo"
-
             else:
                 reg_uid = st.text_input("Choose Unique Team Login ID", placeholder="e.g., alpha_team").strip()
                 st.markdown("---")
                 st.write("**Group Roster Configuration**")
 
-                # Dynamic inputs for up to 5 team members natively
                 member_cols = st.columns(2)
                 with member_cols[0]:
                     m1_name = st.text_input("Member 1 Name", placeholder="Name")
@@ -283,7 +263,6 @@ if not st.session_state.team_name and not admin_portal:
                     m2_id = st.text_input("Member 2 Employee ID/UID", placeholder="ID")
                     m3_id = st.text_input("Member 3 Employee ID/UID", placeholder="ID")
 
-                # Combine values cleanly into a readable metadata string for your sheet rows
                 roster_list = []
                 if m1_name: roster_list.append(f"{m1_name} ({m1_id})")
                 if m2_name: roster_list.append(f"{m2_name} ({m2_id})")
@@ -292,11 +271,7 @@ if not st.session_state.team_name and not admin_portal:
                 reg_display = f"Group: {reg_uid}"
                 roster_meta = " | ".join(roster_list) if roster_list else "Empty Roster"
 
-            submit_registration = st.form_submit_button(
-                "Create Profile & Log In",
-                type="primary",  # <-- Fixed type parameter here
-                use_container_width=True
-            )
+            submit_registration = st.form_submit_button("Create Profile & Log In", type="primary", use_container_width=True)
 
             if submit_registration:
                 if reg_uid and reg_display:
@@ -307,72 +282,31 @@ if not st.session_state.team_name and not admin_portal:
                     try:
                         registration_stamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                         reg_log = pd.DataFrame([{
-                            "team_name": reg_uid,
-                            "step": 0,
-                            "start_time": registration_stamp,
-                            "end_time": roster_meta,
-                            "attempts": 0,
-                            "status": f"REGISTERED: {reg_mode}"
+                            "team_name": reg_uid, "step": 0, "start_time": registration_stamp,
+                            "end_time": roster_meta, "attempts": 0, "status": f"REGISTERED: {reg_mode}"
                         }])
                         conn.create(worksheet="logs", data=reg_log, if_exists="append")
                         st.success("Registration complete! Booting game matrix...")
                         time.sleep(1)
                     except Exception as e:
                         st.error(f"Cloud write delay: {e}")
-
                     st.rerun()
                 else:
                     st.error("Please fill out all required authentication fields.")
 
-                # --------------------------------------------------------------------------
-                # 🔑 NEW: DISCRETE ADMIN PORTAL ACCESS TRIGGER
-                # --------------------------------------------------------------------------
-            st.markdown("---")
-            col_left, col_right = st.columns([3, 1])
-            with col_right:
-                # A clean, low-profile expander acting as a hidden door at the bottom of the page
-                with st.expander("🛠️ System Console"):
-                    admin_pass = st.text_input("Master Password", type="password", key="main_admin_pass")
-                    if admin_pass == "hunt-master-2026":
-                        # When password matches, we flip a session state variable to force the screen to redraw as the dashboard
-                        st.session_state.admin_override = True
-                        st.rerun()
-
-        # ==============================================================================
-        # 7. REDIRECT MAIN VIEWPORT TO ADMIN DASHBOARD
-        # ==============================================================================
-        # Initialize the override state if it doesn't exist yet
-        if "admin_override" not in st.session_state:
-            st.session_state.admin_override = False
-
-        # If the override is tripped, overwrite the entire central viewport with your live admin tracking data
-        if st.session_state.admin_override:
-            st.title("📊 Global Operations Dashboard")
-            st.write("Review real-time hunter timelines and adjust puzzle configuration sets.")
-
-            # Add a prominent exit button to quickly jump back to the player view on your phone
-            if st.button("⬅️ Exit Admin Dashboard & Return to Game Lobby", type="secondary", use_container_width=True):
-                st.session_state.admin_override = False
+    # 🔑 UN-NESTED SYSTEM CONSOLE DOORWAY (Sits cleanly outside all forms at the bottom of the Lobby)
+    st.markdown("---")
+    col_left, col_right = st.columns([3, 1])
+    with col_right:
+        with st.expander("🛠️ System Console"):
+            admin_pass = st.text_input("Master Password", type="password", key="main_admin_pass")
+            if admin_pass == "hunt-master-2026":
+                st.session_state.admin_override = True
                 st.rerun()
 
-            st.markdown("---")
-            st.subheader("📋 Operational Live Leaderboard")
-            try:
-                logs_df = conn.read(worksheet="logs", ttl=2)
-                st.dataframe(logs_df, use_container_width=True)
-            except:
-                st.info("No logs registered in database yet.")
-
-            st.subheader("🛠️ Active System Layout Configuration")
-            if 'quests_df' in locals() or 'quests_df' in globals():
-                st.dataframe(quests_df, use_container_width=True)
-            else:
-                fallback_df = pd.DataFrame(quests_list)
-                st.dataframe(fallback_df, use_container_width=True)
-
-elif not admin_portal:
+# PRIORITY ROUTE 3: ACTIVE GAMEPLAY PIPELINE LOOP
+else:
     if st.session_state.current_step <= total_quests:
-        # Load the active step row
         active_quest = quests_list[st.session_state.current_step - 1]
 
         st.title(f"🗺️ {ui['checkpoint']} {st.session_state.current_step} {ui['of']} {total_quests}")
@@ -382,29 +316,22 @@ elif not admin_portal:
             if st.button(ui["unlock_btn"], type="primary", use_container_width=True):
                 st.session_state.stage_started = True
                 st.session_state.stage_start_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                # Log the stage initialization stamp out to our tracking system columns
                 try:
                     new_log = pd.DataFrame([{
                         "team_name": st.session_state.team_name, "step": st.session_state.current_step,
-                        "start_time": st.session_state.stage_start_time, "end_time": "", "attempts": 0,
-                        "status": "RUNNING"
+                        "start_time": st.session_state.stage_start_time, "end_time": "", "attempts": 0, "status": "RUNNING"
                     }])
                     conn.create(worksheet="logs", data=new_log, if_exists="append")
                 except:
                     pass
                 st.rerun()
         else:
-            # Active Clue View
-            st.info(
-                f"**{ui['your_clue']}**\n\n### {active_quest.get(f'clue_{selected_lang}', active_quest.get('clue_en'))}")
+            st.info(f"**{ui['your_clue']}**\n\n### {active_quest.get(f'clue_{selected_lang}', active_quest.get('clue_en'))}")
 
-            # Optional image rendering loop
             img_asset = str(active_quest.get('image', 'none')).strip()
             if img_asset and img_asset != 'none':
-                # Pull path directly out of local static storage directory engine layout
                 st.image(f"static/uploads/{img_asset}", use_container_width=True)
 
-            # Form Fields
             user_ans = st.text_input(ui["part1"], placeholder=ui["part1_holder"]).strip().lower()
 
             st.write(f"**{ui['part2']}**")
@@ -415,26 +342,21 @@ elif not admin_portal:
             if open_cam:
                 camera_capture = st.camera_input("Scanner Active", label_visibility="collapsed")
                 if camera_capture:
-                    # Native bypass string for demo / manual confirmation routing verification checks
                     user_code = st.text_input("Parsed Code Target", value="AUTO-DETECTED").strip().upper()
             else:
-                user_code = st.text_input("Enter Key Manually", placeholder=ui["part2_holder"],
-                                          label_visibility="collapsed").strip().upper()
+                user_code = st.text_input("Enter Key Manually", placeholder=ui["part2_holder"], label_visibility="collapsed").strip().upper()
 
             if st.button(ui["submit_btn"], type="primary", use_container_width=True):
-                # Core Dual Validation Checks
                 target_ans = str(active_quest.get('answer')).strip().lower()
                 target_code = str(active_quest.get('code')).strip().upper()
 
                 if user_ans == target_ans and (user_code == target_code or user_code == "AUTO-DETECTED"):
                     st.balloons()
-                    # Commit completion metrics directly out to Google Sheet worksheet data frame rows
                     try:
                         completion_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                         finish_log = pd.DataFrame([{
                             "team_name": st.session_state.team_name, "step": st.session_state.current_step,
-                            "start_time": st.session_state.stage_start_time, "end_time": completion_time, "attempts": 1,
-                            "status": "COMPLETED"
+                            "start_time": st.session_state.stage_start_time, "end_time": completion_time, "attempts": 1, "status": "COMPLETED"
                         }])
                         conn.create(worksheet="logs", data=finish_log, if_exists="append")
                     except:
@@ -447,25 +369,16 @@ elif not admin_portal:
                     st.error(ui["invalid_match"])
 
     else:
-        # ==============================================================================
-        # 7. ENHANCED PERFORMANCE ANALYTICS VIEW
-        # ==============================================================================
+        # VICTORY STATE RENDER LAYER
         st.title(ui["victory"])
         st.subheader(ui["victory_sub"])
 
-        # Load logs dynamically to pull this participant's individual dashboard card statistics
         try:
             full_logs_df = conn.read(worksheet="logs", ttl=1)
-            player_logs = full_logs_df[
-                (full_logs_df["team_name"] == st.session_state.team_name) & (full_logs_df["status"] == "COMPLETED")]
-
+            player_logs = full_logs_df[(full_logs_df["team_name"] == st.session_state.team_name) & (full_logs_df["status"] == "COMPLETED")]
             total_attempts = player_logs["attempts"].sum()
             st.metric(label=ui["combined_subs"], value=f"{total_attempts} {ui['attempts']}")
-
             st.write(f"### 📋 {ui['timeline']}")
             st.dataframe(player_logs[["step", "start_time", "end_time"]], use_container_width=True)
         except:
             st.info(ui["organizer_msg"])
-
-elif admin_portal and admin_pass == "hunt-master-2026":
-    pass
