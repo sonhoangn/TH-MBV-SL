@@ -85,6 +85,9 @@ try:
     if not bg_row.empty:
         bg_url = str(bg_row.iloc[0]["start_time"]).strip()
 except Exception as e:
+    # 🚨 TEMPORARY: This will print the exact technical error at the top of your app
+    st.error(f"⚠️ DATABASE CONNECTION CRASHED: {e}")
+
     current_logs_fetch = pd.DataFrame()  # Fallback empty frame to prevent local testing crashes
     quests_list = [
         {"step": 1, "clue_en": "Check the coffee table.", "clue_vi": "Kiểm tra bàn cà phê.",
