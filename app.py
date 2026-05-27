@@ -1,8 +1,6 @@
 import streamlit as st
 import pandas as pd
 import time
-import json
-import os
 from datetime import datetime
 
 # ==============================================================================
@@ -10,49 +8,49 @@ from datetime import datetime
 # ==============================================================================
 st.set_page_config(page_title="MBV 140Y Treasure Hunt", page_icon="🗺️", layout="centered")
 
-# Local Flat-File JSON Database Configuration
-LOCAL_DB_FILE = "treasure_hunt_db.json"
+# Native, zero-dependency SQL connection engine
+conn = st.connection("local_db" if st.runtime.exists() and not st.get_option("server.port") else "streamlit_db",
+                     type="sql")
 
 
-def load_local_db():
-    """Reads the local JSON file database safely"""
-    if not os.path.exists(LOCAL_DB_FILE):
-        return {}
-    try:
-        with open(LOCAL_DB_FILE, "r", encoding="utf-8") as f:
-            return json.load(f)
-    except:
-        return {}
+def init_db():
+    """Creates the unified telemetry table if it doesn't exist"""
+    with conn.session as session:
+        session.execute("""
+            CREATE TABLE IF NOT EXISTS hunt_logs (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                team_name TEXT,
+                step INTEGER,
+                start_time TEXT,
+                end_time TEXT,
+                attempts INTEGER,
+                status TEXT,
+                notes TEXT,
+                timestamp TEXT
+            );
+        """)
+        session.commit()
 
 
-def save_local_db(data):
-    """Writes the updated state synchronously to the local JSON database"""
-    with open(LOCAL_DB_FILE, "w", encoding="utf-8") as f:
-        json.dump(data, f, indent=4, ensure_ascii=False)
+def push_log_to_db(team, step, start, end, attempts, status, notes=""):
+    """Synchronously inserts state records into the cloud database"""
+    with conn.session as session:
+        session.execute("""
+            INSERT INTO hunt_logs (team_name, step, start_time, end_time, attempts, status, notes, timestamp)
+            VALUES (:team, :step, :start, :end, :attempts, :status, :notes, :ts);
+        """, {
+            "team": str(team), "step": int(step), "start": str(start), "end": str(end),
+            "attempts": int(attempts), "status": str(status), "notes": str(notes),
+            "ts": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        })
+        session.commit()
 
 
-def push_log_local(team, step, start, end, attempts, status, meta_notes=""):
-    """Saves or appends log entries instantly to the local data store"""
-    db = load_local_db()
-    if team not in db:
-        db[team] = {
-            "registration_notes": meta_notes,
-            "registered_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-            "history": []
-        }
-
-    # Append the running audit log entry
-    log_entry = {
-        "step": int(step),
-        "start_time": str(start),
-        "end_time": str(end),
-        "attempts": int(attempts),
-        "status": str(status),
-        "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    }
-    db[team]["history"].append(log_entry)
-    save_local_db(db)
-
+# Initialize Database Schema
+try:
+    init_db()
+except Exception:
+    pass
 
 # Core Session State Inits
 if "team_name" not in st.session_state:
@@ -69,18 +67,17 @@ if "admin_override" not in st.session_state:
 # 🖼️ Mercedes-Benz 140Y Corporate Asset Background
 BG_URL = "https://group.mercedes-benz.com/bilder/innovationen/specials/140-years-of-innovation/140-years-of-innovation-visual-3-2-w1680xh945-cutout.jpg"
 
-# Hardcoded Questions Fallback Data Array (No remote sheet parsing required)
+# Hardcoded Questions Array
 quests_list = [
     {"step": 1, "clue_en": "Check near the main showroom entrance display.",
      "clue_vi": "Kiểm tra gần khu trưng bày lối vào showroom chính.",
-     "clue_de": "Prüfe den Haupteingang Ausstellungsbereich.", "code": "MBV-START-140", "image_url": ""},
+     "clue_de": "Prüfe den Haupteingang Ausstellungsbereich.", "code": "MBV-START-140"},
     {"step": 2, "clue_en": "Look under the glass coffee table in the lounge.",
      "clue_vi": "Tìm dưới bàn cà phê bằng kính ở khu vực phòng chờ.",
-     "clue_de": "Suche unter dem Kaffeetisch aus Glas in der Lounge.", "code": "SILVER-ARROW", "image_url": ""},
+     "clue_de": "Suche unter dem Kaffeetisch aus Glas in der Lounge.", "code": "SILVER-ARROW"},
     {"step": 3, "clue_en": "The final puzzle key is hidden by the classic model scale array.",
      "clue_vi": "Mã số cuối cùng được giấu cạnh tủ mô hình xe cổ.",
-     "clue_de": "Der letzte Schlüssel ist beim Oldtimer-Modellregal versteckt.", "code": "AMG-POWER-99",
-     "image_url": ""}
+     "clue_de": "Der letzte Schlüssel ist beim Oldtimer-Modellregal versteckt.", "code": "AMG-POWER-99"}
 ]
 total_quests = len(quests_list)
 
@@ -180,25 +177,15 @@ if st.session_state.admin_override:
     st.markdown("---")
     st.subheader("📋 Operational Live Leaderboard Log File")
 
-    db_snapshot = load_local_db()
-    if db_snapshot:
-        flattened_records = []
-        for team, items in db_snapshot.items():
-            for log in items.get("history", []):
-                flattened_records.append({
-                    "Team ID": team,
-                    "Notes": items.get("registration_notes", ""),
-                    "Station Step": log.get("step"),
-                    "Unlocked At": log.get("start_time"),
-                    "Verified At": log.get("end_time"),
-                    "Status": log.get("status")
-                })
-        if flattened_records:
-            st.dataframe(pd.DataFrame(flattened_records), use_container_width=True)
+    try:
+        logs_df = conn.query(
+            "SELECT team_name as 'Team ID', notes as 'Notes', step as 'Station Step', start_time as 'Unlocked At', end_time as 'Verified At', status as 'Status' FROM hunt_logs;")
+        if not logs_df.empty:
+            st.dataframe(logs_df, use_container_width=True)
         else:
-            st.info("Database initialized, but no active runs logged yet.")
-    else:
-        st.info("No logs registered in database yet.")
+            st.info("No active runs logged yet.")
+    except Exception:
+        st.info("Database is initializing...")
 
 # ROUTE 2: PLAYER ACCESS GATE / ACCESS LOBBY
 elif not st.session_state.team_name:
@@ -210,25 +197,26 @@ elif not st.session_state.team_name:
             player_id = st.text_input(ui["team_label"]).strip()
             enter_gate = st.form_submit_button(ui["start_btn"], type="primary", use_container_width=True)
             if enter_gate and player_id:
-                db = load_local_db()
-                if player_id in db:
+                history_df = conn.query(f"SELECT * FROM hunt_logs WHERE team_name = :team;", params={"team": player_id})
+
+                if not history_df.empty:
                     st.session_state.team_name = player_id
-                    # Calculate their accurate current stage based on past completions
-                    history = db[player_id]["history"]
-                    completed_steps = [log["step"] for log in history if log["status"] == "COMPLETED"]
+
+                    # Calculate current step safely
+                    completed_steps = history_df[history_df["status"] == "COMPLETED"]["step"].tolist()
                     if completed_steps:
                         st.session_state.current_step = max(completed_steps) + 1
                     else:
                         st.session_state.current_step = 1
 
-                    # Restore running stage timer if they refreshed midway
-                    running_stages = [log for log in history if log["status"] == "RUNNING"]
-                    if running_stages and (not completed_steps or running_stages[-1]["step"] > max(completed_steps)):
+                    # Restore running status safely on session breaks
+                    running_steps = history_df[history_df["status"] == "RUNNING"]["step"].tolist()
+                    if running_steps and (not completed_steps or max(running_steps) > max(completed_steps)):
                         st.session_state.stage_started = True
-                        st.session_state.stage_start_time = running_stages[-1]["start_time"]
+                        st.session_state.stage_start_time = history_df[history_df["status"] == "RUNNING"].iloc[-1][
+                            "start_time"]
                     else:
                         st.session_state.stage_started = False
-
                     st.rerun()
                 else:
                     st.error("Team profile ID not found! Please register first.")
@@ -240,16 +228,17 @@ elif not st.session_state.team_name:
             submit_registration = st.form_submit_button("Create Profile & Log In", type="primary",
                                                         use_container_width=True)
             if submit_registration and reg_uid:
-                db = load_local_db()
-                if reg_uid in db:
+                check_exist = conn.query(f"SELECT 1 FROM hunt_logs WHERE team_name = :team LIMIT 1;",
+                                         params={"team": reg_uid})
+                if not check_exist.empty:
                     st.error("This Login ID is already taken! Choose another one.")
                 else:
                     st.session_state.team_name = reg_uid
                     st.session_state.current_step = 1
                     st.session_state.stage_started = False
 
-                    push_log_local(reg_uid, 0, datetime.now().strftime("%Y-%m-%d %H:%M:%S"), "", 0, "REGISTERED",
-                                   meta_notes=reg_meta)
+                    push_log_to_db(reg_uid, 0, datetime.now().strftime("%Y-%m-%d %H:%M:%S"), "", 0, "REGISTERED",
+                                   notes=reg_meta)
                     st.success("Profile initialized online!")
                     time.sleep(0.5)
                     st.rerun()
@@ -259,13 +248,12 @@ elif not st.session_state.team_name:
     with col_right_admin:
         with st.expander("🛠️ Console"):
             admin_pass = st.text_input("Master Password", type="password", key="main_admin_pass")
-            if admin_pass == "MBV140Years":  # Secure clean string match fallback
+            if admin_pass == "MBV140Years":
                 st.session_state.admin_override = True
                 st.rerun()
 
 # ROUTE 3: ACTIVE GAMEPLAY & VICTORY LOOPS
 else:
-    # Game Ongoing
     if st.session_state.current_step <= total_quests:
         active_quest = quests_list[st.session_state.current_step - 1]
         st.title(f"🗺️ {ui['checkpoint']} {st.session_state.current_step} {ui['of']} {total_quests}")
@@ -276,11 +264,11 @@ else:
                 st.session_state.stage_started = True
                 st.session_state.stage_start_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-                push_log_local(st.session_state.team_name, st.session_state.current_step,
+                push_log_to_db(st.session_state.team_name, st.session_state.current_step,
                                st.session_state.stage_start_time, "", 0, "RUNNING")
                 st.rerun()
         else:
-            current_clue_text = active_quest.get(f'clue_{selected_lang}', active_quest.get('clue_en'))
+            current_clue_text = active_quest.get('clue_' + selected_lang, active_quest.get('clue_en'))
             st.info(f"**{ui['your_clue']}**\n\n### {current_clue_text}")
 
             st.write(f"### 🔑 {ui['part2']}")
@@ -293,7 +281,7 @@ else:
                 if camera_capture:
                     user_code = "AUTO-DETECTED"
             else:
-                user_code = st.text_input("Enter Code Manually", placeholder=ui["part2_holder"],
+                user_code = st.text_input("Enter Code Manual", placeholder=ui["part2_holder"],
                                           label_visibility="collapsed").strip().upper()
 
             if st.button(ui["submit_btn"], type="primary", use_container_width=True):
@@ -303,7 +291,7 @@ else:
                     st.balloons()
                     end_time_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-                    push_log_local(st.session_state.team_name, st.session_state.current_step,
+                    push_log_to_db(st.session_state.team_name, st.session_state.current_step,
                                    st.session_state.stage_start_time, end_time_str, 1, "COMPLETED")
 
                     st.session_state.current_step += 1
@@ -312,27 +300,24 @@ else:
                 else:
                     st.error(ui["invalid_match"])
 
-    # Game Finished (Victory Screen)
     else:
         st.title(ui["victory"])
         st.subheader(ui["victory_sub"])
 
-        db = load_local_db()
-        player_history = db.get(st.session_state.team_name, {}).get("history", [])
-        completed_stages = [log for log in player_history if log["status"] == "COMPLETED"]
+        history_df = conn.query(f"SELECT * FROM hunt_logs WHERE team_name = :team AND status = 'COMPLETED';",
+                                params={"team": st.session_state.team_name})
 
-        if completed_stages:
+        if not history_df.empty:
             records = []
-            total_attempts = 0
-            for log in completed_stages:
-                total_attempts += log.get("attempts", 1)
+            total_attempts = int(history_df["attempts"].sum())
 
-                t1 = datetime.strptime(log["start_time"], "%Y-%m-%d %H:%M:%S")
-                t2 = datetime.strptime(log["end_time"], "%Y-%m-%d %H:%M:%S")
+            for _, row in history_df.iterrows():
+                t1 = datetime.strptime(row["start_time"], "%Y-%m-%d %H:%M:%S")
+                t2 = datetime.strptime(row["end_time"], "%Y-%m-%d %H:%M:%S")
                 duration_mins = round((t2 - t1).total_seconds() / 60, 1)
 
                 records.append({
-                    "Station Step": f"Station {log['step']}",
+                    "Station Step": f"Station {row['step']}",
                     "Unlocked At": t1.strftime("%H:%M:%S"),
                     "Verified At": t2.strftime("%H:%M:%S"),
                     "Duration": f"{duration_mins} min"
