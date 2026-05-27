@@ -16,9 +16,8 @@ conn = st.connection("local_db" if st.runtime.exists() and not st.get_option("se
 def init_db():
     """Forces a database reset to apply the new schema updates"""
     with conn.session as session:
-        # ⚠️ TEMPORARY FORCE RESET LINE: Un-comment this line once to wipe the old table,
-        # then comment it back out or delete it so it doesn't clear data during the event!
-        session.execute("DROP TABLE IF EXISTS hunt_logs;")
+
+        # session.execute("DROP TABLE IF EXISTS hunt_logs;")
 
         session.execute("""
             CREATE TABLE IF NOT EXISTS hunt_logs (
