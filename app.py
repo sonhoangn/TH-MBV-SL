@@ -26,7 +26,7 @@ if "admin_override" not in st.session_state:
 # ==============================================================================
 LOCALIZED_UI = {
     "en": {
-        "welcome": "Welcome to the Adventure Hunt",
+        "welcome": "MBV 140Y Treasure Hunt",
         "team_label": "Enter Team or Player Name",
         "start_btn": "Enter Game Lobby",
         "checkpoint": "Station",
@@ -58,7 +58,7 @@ LOCALIZED_UI = {
         "logout": "Log Out"
     },
     "vi": {
-        "welcome": "Chào Mừng Đến Với Cuộc Săn Tìm",
+        "welcome": "MBV 140Y Treasure Hunt",
         "team_label": "Nhập Tên Đội Hoặc Người Chơi",
         "start_btn": "Vào Phòng Chờ",
         "checkpoint": "Trạm",
@@ -90,7 +90,7 @@ LOCALIZED_UI = {
         "logout": "Đăng Xuất"
     },
     "de": {
-        "welcome": "Willkommen zur Abenteuerjagd",
+        "welcome": "MBV 140Y Treasure Hunt",
         "team_label": "Team- oder Spielername eingeben",
         "start_btn": "Spiel-Lobby betreten",
         "checkpoint": "Station",
