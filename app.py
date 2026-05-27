@@ -158,19 +158,24 @@ if st.session_state.admin_override:
 
         if save_bg_btn and new_bg:
             try:
-                # Overwrite or create the SYSTEM_SETTINGS line row configuration inside your logs tab
+                # 1. Prepare the single configuration row as a clean DataFrame
                 bg_update_df = pd.DataFrame([{
-                    "team_name": "SYSTEM_SETTINGS", "step": 0, "start_time": new_bg.strip(),
-                    "end_time": "SYSTEM", "attempts": 0, "status": "BACKGROUND"
+                    "team_name": "SYSTEM_SETTINGS",
+                    "step": 0,
+                    "start_time": new_bg.strip(),
+                    "end_time": "SYSTEM",
+                    "attempts": 0,
+                    "status": "BACKGROUND"
                 }])
 
-                # Filter out old settings line to keep data sheet rows pristine
-                try:
-                    clean_logs_df = global_logs[global_logs["status"] != "BACKGROUND"]
-                    combined_logs = pd.concat([clean_logs_df, bg_update_df], ignore_index=True)
-                    conn.create(worksheet="logs", data=combined_logs, if_exists="replace")
-                except:
-                    conn.create(worksheet="logs", data=bg_update_df, if_exists="append")
+                # 2. Filter out any existing BACKGROUND rows from your current global logs variable
+                clean_logs_df = global_logs[global_logs["status"] != "BACKGROUND"]
+
+                # 3. Concatenate the clean historical data with your new background row
+                combined_logs = pd.concat([clean_logs_df, bg_update_df], ignore_index=True)
+
+                # 4. FIXED: Use .update() instead of .create(if_exists="replace")
+                conn.update(worksheet="logs", data=combined_logs)
 
                 st.success("App appearance configuration flushed to Cloud! Reloading style definitions...")
                 time.sleep(1)
