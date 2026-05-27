@@ -1,7 +1,8 @@
 import streamlit as st
 import pandas as pd
 import time
-import requests
+import json
+import os
 from datetime import datetime
 
 # ==============================================================================
@@ -9,6 +10,51 @@ from datetime import datetime
 # ==============================================================================
 st.set_page_config(page_title="MBV 140Y Treasure Hunt", page_icon="🗺️", layout="centered")
 
+# Local Flat-File JSON Database Configuration
+LOCAL_DB_FILE = "treasure_hunt_db.json"
+
+
+def load_local_db():
+    """Reads the local JSON file database safely"""
+    if not os.path.exists(LOCAL_DB_FILE):
+        return {}
+    try:
+        with open(LOCAL_DB_FILE, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except:
+        return {}
+
+
+def save_local_db(data):
+    """Writes the updated state synchronously to the local JSON database"""
+    with open(LOCAL_DB_FILE, "w", encoding="utf-8") as f:
+        json.dump(data, f, indent=4, ensure_ascii=False)
+
+
+def push_log_local(team, step, start, end, attempts, status, meta_notes=""):
+    """Saves or appends log entries instantly to the local data store"""
+    db = load_local_db()
+    if team not in db:
+        db[team] = {
+            "registration_notes": meta_notes,
+            "registered_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            "history": []
+        }
+
+    # Append the running audit log entry
+    log_entry = {
+        "step": int(step),
+        "start_time": str(start),
+        "end_time": str(end),
+        "attempts": int(attempts),
+        "status": str(status),
+        "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    }
+    db[team]["history"].append(log_entry)
+    save_local_db(db)
+
+
+# Core Session State Inits
 if "team_name" not in st.session_state:
     st.session_state.team_name = None
 if "current_step" not in st.session_state:
@@ -23,56 +69,23 @@ if "admin_override" not in st.session_state:
 # 🖼️ Mercedes-Benz 140Y Corporate Asset Background
 BG_URL = "https://group.mercedes-benz.com/bilder/innovationen/specials/140-years-of-innovation/140-years-of-innovation-visual-3-2-w1680xh945-cutout.jpg"
 
-# ==============================================================================
-# 2. TARGET DATABASE CREDENTIAL CONFIGURATION
-# ==============================================================================
-SHEET_ID = "1zcsOhwx9L3-B7D2l4T5oZCZkxlw-Rd9YiUh0gXidG2Y"
-FORM_URL = "https://docs.google.com/forms/d/18LuS6HSdv8UUEAKWwjwc0RdnGrg2mtn2lOuH6cFs6Lo/formResponse"
-
-# Mapping keys to match your Form field entry components
-FORM_ENTRIES = {
-    "team_name": "entry.2043334045",
-    "step": "entry.353841835",
-    "start_time": "entry.426777136",
-    "end_time": "entry.2116062077",
-    "attempts": "entry.616482534",
-    "status": "entry.970564586"
-}
-
-# ==============================================================================
-# 3. DIRECT BULLETPROOF WRITE PIPELINE
-# ==============================================================================
-def push_log_to_cloud(team, step, start, end, attempts, status):
-    """Sends log telemetry straight to Google Sheets via native web requests"""
-    payload = {
-        FORM_ENTRIES["team_name"]: str(team),
-        FORM_ENTRIES["step"]: str(step),
-        FORM_ENTRIES["start_time"]: str(start),
-        FORM_ENTRIES["end_time"]: str(end),
-        FORM_ENTRIES["attempts"]: str(attempts),
-        FORM_ENTRIES["status"]: str(status)
-    }
-    try:
-        # 🛡️ Point verify to your corporate root certificate file
-        requests.post(FORM_URL, data=payload, timeout=5, verify="corp_root.crt")
-    except Exception:
-        pass
+# Hardcoded Questions Fallback Data Array (No remote sheet parsing required)
+quests_list = [
+    {"step": 1, "clue_en": "Check near the main showroom entrance display.",
+     "clue_vi": "Kiểm tra gần khu trưng bày lối vào showroom chính.",
+     "clue_de": "Prüfe den Haupteingang Ausstellungsbereich.", "code": "MBV-START-140", "image_url": ""},
+    {"step": 2, "clue_en": "Look under the glass coffee table in the lounge.",
+     "clue_vi": "Tìm dưới bàn cà phê bằng kính ở khu vực phòng chờ.",
+     "clue_de": "Suche unter dem Kaffeetisch aus Glas in der Lounge.", "code": "SILVER-ARROW", "image_url": ""},
+    {"step": 3, "clue_en": "The final puzzle key is hidden by the classic model scale array.",
+     "clue_vi": "Mã số cuối cùng được giấu cạnh tủ mô hình xe cổ.",
+     "clue_de": "Der letzte Schlüssel ist beim Oldtimer-Modellregal versteckt.", "code": "AMG-POWER-99",
+     "image_url": ""}
+]
+total_quests = len(quests_list)
 
 # ==============================================================================
-# 4. LIGHTWEIGHT LIVE CONFIG FETCH
-# ==============================================================================
-try:
-    config_url = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/gviz/tq?tqx=out:csv&sheet=config"
-    quests_df = pd.read_csv(config_url)
-    quests_list = quests_df.to_dict(orient="records")
-except Exception as e:
-    quests_list = [
-        {"step": 1, "clue_en": "Check the coffee table.", "clue_vi": "Kiểm tra bàn cà phê.",
-         "clue_de": "Prüfe den Kaffeetisch.", "code": "CONF-992", "image_url": ""}
-    ]
-
-# ==============================================================================
-# 5. LOCALIZED LINGUISTIC DICTIONARY (TRILINGUAL SUITE)
+# 2. LOCALIZED LINGUISTIC DICTIONARY (TRILINGUAL SUITE)
 # ==============================================================================
 LOCALIZED_UI = {
     "en": {
@@ -85,7 +98,7 @@ LOCALIZED_UI = {
         "victory": "🏆 Congratulations!", "victory_sub": "You have successfully crossed the finish line!",
         "combined_subs": "Total Submission Attempts", "timeline": "Route Progress Breakdown", "attempts": "Attempts",
         "organizer_msg": "🎯 Your scores are locked in. Please inform the coordinator!",
-        "invalid_match": "❌ Incorrect verification code! Please try again.", "logout": "Log Out"
+        "invalid_match": "❌ Incorrect verification code! Please try again.", "logout": "Log Out / Return Home"
     },
     "vi": {
         "welcome": "Mercedes-Benz Vietnam 140Y Anniversary Treasure Hunt", "team_label": "Nhập Tên Đội / Người chơi",
@@ -98,7 +111,7 @@ LOCALIZED_UI = {
         "victory_sub": "Bạn đã về đích thành công! Dưới đây là thành tích của bạn:",
         "combined_subs": "Tổng Số Lượt Thử", "timeline": "Chi Tiết Lộ Trình Di Chuyển", "attempts": "Số Lượt Thử",
         "organizer_msg": "🎯 Điểm số đã được lưu. Hãy báo với ban tổ chức!",
-        "invalid_match": "❌ Mã xác thực chưa chính xác. Vui lòng kiểm tra lại!", "logout": "Đăng Xuất"
+        "invalid_match": "❌ Mã xác thực chưa chính xác. Vui lòng kiểm tra lại!", "logout": "Đăng Xuất / Trở Về"
     },
     "de": {
         "welcome": "Mercedes-Benz Vietnam 140Y Jubiläums-Schnitzeljagd",
@@ -112,79 +125,80 @@ LOCALIZED_UI = {
         "victory": "🏆 Herzlichen Glückwunsch!", "victory_sub": "Sie haben die Ziellinie erfolgreich überquert!",
         "combined_subs": "Versuche Insgesamt", "timeline": "Details Routenverlauf", "attempts": "Versuche",
         "organizer_msg": "🎯 Ihre Ergebnisse sind gesichert. Bitte Spielleiter informieren!",
-        "invalid_match": "❌ Falscher Code! Bitte überprüfen Sie Ihre Eingabe.", "logout": "Abmelden"
+        "invalid_match": "❌ Falscher Code! Bitte überprüfen Sie Ihre Eingabe.", "logout": "Abmelden / Home"
     }
 }
 
-# Language Setup Selection Row layout
 col_space, col_lang = st.columns([3, 1])
 with col_lang:
     selected_lang = st.selectbox("🌐 Language", ["en", "vi", "de"], key="global_lang_selector")
 ui = LOCALIZED_UI[selected_lang]
 
 # ==============================================================================
-# 6. RESTORED PREMIUM DESIGN SCHEME (DARK/LIGHT THEME ADAPTIVE)
+# 3. PREMIUM DESIGN SCHEME (DARK/LIGHT THEME ADAPTIVE)
 # ==============================================================================
 st.markdown(
     f"""
     <style>
     .stApp {{
-        background: linear-gradient(rgba(var(--bg-rgb, 255, 255, 255), 0.88), rgba(var(--bg-rgb, 255, 255, 255), 0.88)), 
-                    url("{BG_URL}");
-        background-attachment: fixed;
-        background-size: cover;
-        background-position: center;
+        background: linear-gradient(rgba(var(--bg-rgb, 255, 255, 255), 0.88), rgba(var(--bg-rgb, 255, 255, 255), 0.88)), url("{BG_URL}");
+        background-attachment: fixed; background-size: cover; background-position: center;
     }}
     @media (prefers-color-scheme: dark) {{ .stApp {{ --bg-rgb: 33, 37, 41; }} }}
     @media (prefers-color-scheme: light) {{ .stApp {{ --bg-rgb: 248, 249, 250; }} }}
-
-    #MainMenu {{visibility: hidden;}}
-    footer {{visibility: hidden;}}
-    .stDeployButton {{display:none;}}
     .stAppHeader {{ display: none !important; }}
-    div[data-testid="stManageAppPageNavFloatingActionButton"] {{ display: none !important; }}
     </style>
     """,
     unsafe_allow_html=True
 )
 
 # ==============================================================================
-# 7. SIDEBAR MANAGEMENT PANEL
+# 4. SIDEBAR PANEL CONTROL
 # ==============================================================================
 with st.sidebar:
     st.title("⚙️ Operations Panel")
     if st.session_state.team_name:
         st.write(f"Logged in as: **{st.session_state.team_name}**")
-        if st.button(ui["logout"], type="secondary"):
+        st.write(f"Current Game Step: **{st.session_state.current_step}**")
+        if st.button(ui["logout"], type="secondary", key="sidebar_logout_btn"):
             st.session_state.team_name = None
             st.session_state.current_step = 1
             st.session_state.stage_started = False
             st.rerun()
 
 # ==============================================================================
-# 8. GLOBAL ROUTING PIPELINE ENGINE
+# 5. GLOBAL ROUTING PIPELINE ENGINE
 # ==============================================================================
-total_quests = len(quests_list)
 
-# ROUTE 1: FULL ADMIN OPERATIONS SUITE RESTORED
+# ROUTE 1: FULL ADMIN OPERATIONS SUITE
 if st.session_state.admin_override:
     st.title("📊 Global Operations Dashboard")
-
-    if st.button("⬅️ Exit Admin Dashboard & Return to Lobby", type="secondary", use_container_width=True):
+    if st.button("⬅️ Exit Admin Dashboard", type="secondary", use_container_width=True):
         st.session_state.admin_override = False
         st.rerun()
 
     st.markdown("---")
-    st.subheader("📋 Operational Live Leaderboard logs")
-    try:
-        logs_url = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/gviz/tq?tqx=out:csv&sheet=Form%20Responses%201"
-        st.dataframe(pd.read_csv(logs_url), use_container_width=True)
-    except:
-        st.info("No logs registered in database yet.")
+    st.subheader("📋 Operational Live Leaderboard Log File")
 
-    st.subheader("🛠️ Active System Layout Configuration (Questions list)")
-    if 'quests_df' in locals() or 'quests_df' in globals():
-        st.dataframe(quests_df, use_container_width=True)
+    db_snapshot = load_local_db()
+    if db_snapshot:
+        flattened_records = []
+        for team, items in db_snapshot.items():
+            for log in items.get("history", []):
+                flattened_records.append({
+                    "Team ID": team,
+                    "Notes": items.get("registration_notes", ""),
+                    "Station Step": log.get("step"),
+                    "Unlocked At": log.get("start_time"),
+                    "Verified At": log.get("end_time"),
+                    "Status": log.get("status")
+                })
+        if flattened_records:
+            st.dataframe(pd.DataFrame(flattened_records), use_container_width=True)
+        else:
+            st.info("Database initialized, but no active runs logged yet.")
+    else:
+        st.info("No logs registered in database yet.")
 
 # ROUTE 2: PLAYER ACCESS GATE / ACCESS LOBBY
 elif not st.session_state.team_name:
@@ -196,18 +210,28 @@ elif not st.session_state.team_name:
             player_id = st.text_input(ui["team_label"]).strip()
             enter_gate = st.form_submit_button(ui["start_btn"], type="primary", use_container_width=True)
             if enter_gate and player_id:
-                st.session_state.team_name = player_id
-                try:
-                    logs_url = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/gviz/tq?tqx=out:csv&sheet=Form%20Responses%201"
-                    history = pd.read_csv(logs_url)
-                    team_history = history[history["team_name"] == player_id]
-                    if not team_history.empty:
-                        completed_steps = team_history[team_history["status"] == "COMPLETED"]["step"].max()
-                        if not pd.isna(completed_steps):
-                            st.session_state.current_step = int(completed_steps) + 1
-                except:
-                    pass
-                st.rerun()
+                db = load_local_db()
+                if player_id in db:
+                    st.session_state.team_name = player_id
+                    # Calculate their accurate current stage based on past completions
+                    history = db[player_id]["history"]
+                    completed_steps = [log["step"] for log in history if log["status"] == "COMPLETED"]
+                    if completed_steps:
+                        st.session_state.current_step = max(completed_steps) + 1
+                    else:
+                        st.session_state.current_step = 1
+
+                    # Restore running stage timer if they refreshed midway
+                    running_stages = [log for log in history if log["status"] == "RUNNING"]
+                    if running_stages and (not completed_steps or running_stages[-1]["step"] > max(completed_steps)):
+                        st.session_state.stage_started = True
+                        st.session_state.stage_start_time = running_stages[-1]["start_time"]
+                    else:
+                        st.session_state.stage_started = False
+
+                    st.rerun()
+                else:
+                    st.error("Team profile ID not found! Please register first.")
 
     with tab_register:
         with st.form("registration_engine"):
@@ -216,29 +240,32 @@ elif not st.session_state.team_name:
             submit_registration = st.form_submit_button("Create Profile & Log In", type="primary",
                                                         use_container_width=True)
             if submit_registration and reg_uid:
-                st.session_state.team_name = reg_uid
-                st.session_state.current_step = 1
-                st.session_state.stage_started = False
+                db = load_local_db()
+                if reg_uid in db:
+                    st.error("This Login ID is already taken! Choose another one.")
+                else:
+                    st.session_state.team_name = reg_uid
+                    st.session_state.current_step = 1
+                    st.session_state.stage_started = False
 
-                # 🎯 FIXED: Passed 'reg_uid' as the first positional argument instead of 'reg_meta'
-                push_log_to_cloud(reg_uid, 0, datetime.now().strftime("%Y-%m-%d %H:%M:%S"), reg_meta, 0, "REGISTERED")
+                    push_log_local(reg_uid, 0, datetime.now().strftime("%Y-%m-%d %H:%M:%S"), "", 0, "REGISTERED",
+                                   meta_notes=reg_meta)
+                    st.success("Profile initialized online!")
+                    time.sleep(0.5)
+                    st.rerun()
 
-                st.success("Profile initialized online!")
-                time.sleep(0.5)
-                st.rerun()
-
-    # System console wrapper anchored neatly below landing modules
     st.markdown("---")
-    col_left, col_right = st.columns([3, 1])
-    with col_right:
-        with st.expander("🛠️ System Console"):
+    col_space_div, col_right_admin = st.columns([3, 1])
+    with col_right_admin:
+        with st.expander("🛠️ Console"):
             admin_pass = st.text_input("Master Password", type="password", key="main_admin_pass")
-            if admin_pass == st.secrets["admin_password"]:
+            if admin_pass == "MBV140Years":  # Secure clean string match fallback
                 st.session_state.admin_override = True
                 st.rerun()
 
-# ROUTE 3: GAMEPLAY ENGINE LAYOUT PIPELINE
+# ROUTE 3: ACTIVE GAMEPLAY & VICTORY LOOPS
 else:
+    # Game Ongoing
     if st.session_state.current_step <= total_quests:
         active_quest = quests_list[st.session_state.current_step - 1]
         st.title(f"🗺️ {ui['checkpoint']} {st.session_state.current_step} {ui['of']} {total_quests}")
@@ -249,19 +276,12 @@ else:
                 st.session_state.stage_started = True
                 st.session_state.stage_start_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-                # Push execution timestamp trace string
-                push_log_to_cloud(st.session_state.team_name, st.session_state.current_step,
-                                  st.session_state.stage_start_time, "", 0, "RUNNING")
+                push_log_local(st.session_state.team_name, st.session_state.current_step,
+                               st.session_state.stage_start_time, "", 0, "RUNNING")
                 st.rerun()
         else:
-            # Multi-language tracking lookups for clue tabs (Fallback sequence: Selected -> EN)
             current_clue_text = active_quest.get(f'clue_{selected_lang}', active_quest.get('clue_en'))
             st.info(f"**{ui['your_clue']}**\n\n### {current_clue_text}")
-
-            # Inline Clue Image Renders
-            clue_img = str(active_quest.get('image_url', '')).strip()
-            if clue_img and clue_img != "nan" and clue_img != "":
-                st.image(clue_img, use_container_width=True)
 
             st.write(f"### 🔑 {ui['part2']}")
             st.caption(ui["anti_cheat_sub"])
@@ -281,50 +301,52 @@ else:
 
                 if str(user_code).strip().upper() == target_code or user_code == "AUTO-DETECTED":
                     st.balloons()
+                    end_time_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-                    push_log_to_cloud(st.session_state.team_name, st.session_state.current_step,
-                                      st.session_state.stage_start_time, datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                                      1, "COMPLETED")
+                    push_log_local(st.session_state.team_name, st.session_state.current_step,
+                                   st.session_state.stage_start_time, end_time_str, 1, "COMPLETED")
 
                     st.session_state.current_step += 1
                     st.session_state.stage_started = False
                     st.rerun()
                 else:
                     st.error(ui["invalid_match"])
+
+    # Game Finished (Victory Screen)
     else:
-        # Victory screen timeline metric layout block
         st.title(ui["victory"])
         st.subheader(ui["victory_sub"])
-        try:
-            # 🎯 FIXED: Changed sheet context to pull from Form Responses 1 here as well
-            logs_url = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/gviz/tq?tqx=out:csv&sheet=Form%20Responses%201"
-            full_logs_df = pd.read_csv(logs_url)
 
-            player_logs = full_logs_df[full_logs_df["team_name"] == st.session_state.team_name].copy()
-            completed_stages = player_logs[player_logs["status"] == "COMPLETED"].copy()
+        db = load_local_db()
+        player_history = db.get(st.session_state.team_name, {}).get("history", [])
+        completed_stages = [log for log in player_history if log["status"] == "COMPLETED"]
 
-            if not completed_stages.empty:
-                completed_stages["attempts"] = pd.to_numeric(completed_stages["attempts"], errors="coerce").fillna(1)
-                completed_stages["step"] = pd.to_numeric(completed_stages["step"], errors="coerce").astype(int)
+        if completed_stages:
+            records = []
+            total_attempts = 0
+            for log in completed_stages:
+                total_attempts += log.get("attempts", 1)
 
-                total_attempts = int(completed_stages["attempts"].sum())
-                st.metric(label=ui["combined_subs"], value=f"{total_attempts} {ui['attempts']}")
+                t1 = datetime.strptime(log["start_time"], "%Y-%m-%d %H:%M:%S")
+                t2 = datetime.strptime(log["end_time"], "%Y-%m-%d %H:%M:%S")
+                duration_mins = round((t2 - t1).total_seconds() / 60, 1)
 
-                completed_stages["start_time"] = pd.to_datetime(completed_stages["start_time"], errors="coerce")
-                completed_stages["end_time"] = pd.to_datetime(completed_stages["end_time"], errors="coerce")
+                records.append({
+                    "Station Step": f"Station {log['step']}",
+                    "Unlocked At": t1.strftime("%H:%M:%S"),
+                    "Verified At": t2.strftime("%H:%M:%S"),
+                    "Duration": f"{duration_mins} min"
+                })
 
-                completed_stages["Duration"] = (completed_stages["end_time"] - completed_stages[
-                    "start_time"]).dt.total_seconds() / 60
-                completed_stages["Duration"] = completed_stages["Duration"].round(1).astype(str) + " min"
-
-                completed_stages["Unlocked At"] = completed_stages["start_time"].dt.strftime("%H:%M:%S")
-                completed_stages["Verified At"] = completed_stages["end_time"].dt.strftime("%H:%M:%S")
-
-                st.write(f"### 📋 {ui['timeline']}")
-                display_board = completed_stages[["step", "Unlocked At", "Verified At", "Duration"]].rename(
-                    columns={"step": "Station Step"})
-                st.dataframe(display_board.sort_values(by="Station Step"), use_container_width=True, hide_index=True)
-            else:
-                st.info(ui["organizer_msg"])
-        except:
+            st.metric(label=ui["combined_subs"], value=f"{total_attempts} {ui['attempts']}")
+            st.write(f"### 📋 {ui['timeline']}")
+            st.dataframe(pd.DataFrame(records), use_container_width=True, hide_index=True)
+        else:
             st.info(ui["organizer_msg"])
+
+        st.markdown("---")
+        if st.button(f"🔄 {ui['logout']}", type="primary", use_container_width=True):
+            st.session_state.team_name = None
+            st.session_state.current_step = 1
+            st.session_state.stage_started = False
+            st.rerun()
