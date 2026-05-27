@@ -41,7 +41,6 @@ FORM_ENTRIES = {
     "status": "entry.970564586"
 }
 
-
 # ==============================================================================
 # 3. DIRECT BULLETPROOF WRITE PIPELINE
 # ==============================================================================
@@ -56,10 +55,16 @@ def push_log_to_cloud(team, step, start, end, attempts, status):
         FORM_ENTRIES["status"]: str(status)
     }
     try:
-        requests.post(FORM_URL, data=payload, timeout=5)
-    except Exception:
-        pass  # Graceful fallback if mobile cellular signals dip on the move
-
+        # 🛡️ Point verify to your corporate root certificate file
+        response = requests.post(
+            FORM_URL,
+            data=payload,
+            timeout=5,
+            verify="corp_root.crt"
+        )
+        print(f"Form submission response: {response.status_code}")
+    except Exception as e:
+        print(f"Network request failed: {e}")
 
 # ==============================================================================
 # 4. LIGHTWEIGHT LIVE CONFIG FETCH
@@ -180,7 +185,7 @@ if st.session_state.admin_override:
     st.markdown("---")
     st.subheader("📋 Operational Live Leaderboard logs")
     try:
-        logs_url = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/gviz/tq?tqx=out:csv&sheet=logs"
+        logs_url = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/gviz/tq?tqx=out:csv&sheet=Form%20Responses%201"
         st.dataframe(pd.read_csv(logs_url), use_container_width=True)
     except:
         st.info("No logs registered in database yet.")
@@ -201,7 +206,7 @@ elif not st.session_state.team_name:
             if enter_gate and player_id:
                 st.session_state.team_name = player_id
                 try:
-                    logs_url = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/gviz/tq?tqx=out:csv&sheet=logs"
+                    logs_url = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/gviz/tq?tqx=out:csv&sheet=Form%20Responses%201"
                     history = pd.read_csv(logs_url)
                     team_history = history[history["team_name"] == player_id]
                     if not team_history.empty:
@@ -224,7 +229,7 @@ elif not st.session_state.team_name:
                 st.session_state.stage_started = False
 
                 # Register team profile response line row to sheet matrix via form engine
-                push_log_to_cloud(reg_uid, 0, datetime.now().strftime("%Y-%m-%d %H:%M:%S"), reg_meta, 0, "REGISTERED")
+                push_log_to_cloud(reg_meta, 0, datetime.now().strftime("%Y-%m-%d %H:%M:%S"), reg_meta, 0, "REGISTERED")
 
                 st.success("Profile initialized online!")
                 time.sleep(0.5)
@@ -285,7 +290,6 @@ else:
                 if str(user_code).strip().upper() == target_code or user_code == "AUTO-DETECTED":
                     st.balloons()
 
-                    # Push verified milestone entry
                     push_log_to_cloud(st.session_state.team_name, st.session_state.current_step,
                                       st.session_state.stage_start_time, datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                                       1, "COMPLETED")
