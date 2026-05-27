@@ -19,7 +19,8 @@ if "stage_start_time" not in st.session_state:
     st.session_state.stage_start_time = None
 if "admin_override" not in st.session_state:
     st.session_state.admin_override = False
-
+# 🖼️ HARDCODED APPLICATION BACKGROUND IMAGE
+BG_URL = "https://group.mercedes-benz.com/bilder/innovationen/specials/140-years-of-innovation/140-years-of-innovation-visual-3-2-w1680xh945-cutout.jpg"
 # ==============================================================================
 # 2. LOCALIZED LINGUISTIC DICTIONARY
 # ==============================================================================
@@ -71,37 +72,22 @@ LOCALIZED_UI = {
 }
 
 # ==============================================================================
-# 3. CLOUD CONNECTIONS & LIVE BACKGROUND FETCH
+# 3. HYBRID CLOUD CONNECTION & LIVE CONFIG FETCH (BULLETPROOF VERSION)
 # ==============================================================================
-bg_url = "https://group.mercedes-benz.com/bilder/innovationen/specials/140-years-of-innovation/140-years-of-innovation-visual-3-2-w1680xh945-cutout.jpg"
 SHEET_ID = "1zcsOhwx9L3-B7D2l4T5oZCZkxlw-Rd9YiUh0gXidG2Y"
-try:
-    # Build direct, clean browser CSV export URLs for each individual tab
-    config_url = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/gviz/tq?tqx=out:csv&sheet=config"
-    logs_url = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/gviz/tq?tqx=out:csv&sheet=logs"
 
-    # Read the data frames directly using native pandas engines
+try:
+    # 🎯 READ LAYER: Uses the direct Google Visualization API endpoint (Bypasses the 400 error)
+    config_url = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/gviz/tq?tqx=out:csv&sheet=config"
     quests_df = pd.read_csv(config_url)
     quests_list = quests_df.to_dict(orient="records")
 
+    # 🎯 WRITE LAYER: Initialize the official connection ONLY for appending/updating team logs
+    conn = st.connection("gsheets", type=GSheetsConnection)
 
-    # Create a mock connection class so your downstream conn.create / conn.update lines don't break
-    class MockConnection:
-        def read(self, worksheet, ttl=0):
-            url = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/gviz/tq?tqx=out:csv&sheet={worksheet}"
-            return pd.read_csv(url)
-
-        def create(self, worksheet, data, if_exists="append"):
-            # Fallback append layer via direct link if needed
-            pass
-
-        def update(self, worksheet, data):
-            pass
-
-
-    conn = MockConnection()
 except Exception as e:
-    st.error(f"⚠️ Direct sheet fetch delay: {e}")
+    st.error(f"⚠️ Live database sync issue: {e}")
+    # Local hardcoded fallback data layout if the cloud network goes completely offline
     quests_list = [
         {"step": 1, "clue_en": "Check the coffee table.", "clue_vi": "Kiểm tra bàn cà phê.",
          "clue_de": "Prüfe den Kaffeetisch.", "answer": "matrix", "code": "CONF-992", "image_url": ""}
@@ -121,7 +107,7 @@ css_style = f"""
 <style>
 .stApp {{
     background: linear-gradient(rgba(var(--bg-rgb, 255, 255, 255), 0.85), rgba(var(--bg-rgb, 255, 255, 255), 0.85)), 
-                url("{bg_url}");
+                url("{BG_URL}");
     background-attachment: fixed;
     background-size: cover;
     background-position: center;
@@ -152,11 +138,11 @@ with st.sidebar:
             st.rerun()
 
 # ==============================================================================
-# 6. GLOBAL ROUTING PIPELINE
+# 6. GLOBAL ROUTING INTERFACE PIPELINE
 # ==============================================================================
 total_quests = len(quests_list)
 
-# PRIORITY ROUTE 1: ADMIN LIVE OPERATIONS VIEW
+# PRIORITY ROUTE 1: ADMIN CONTROL DASHBOARD
 if st.session_state.admin_override:
     st.title("📊 Global Operations Dashboard")
 
@@ -165,41 +151,10 @@ if st.session_state.admin_override:
         st.rerun()
 
     st.markdown("---")
-    st.subheader("🖼️ Custom App Background Management")
-    with st.form("bg_management_form"):
-        new_bg = st.text_input("Paste Direct Image Link URL (.jpg / .png)", value=bg_url,
-                               placeholder="https://group.mercedes-benz.com/bilder/innovationen/specials/140-years-of-innovation/140-years-of-innovation-visual-3-2-w1680xh945-cutout.jpg")
-        save_bg_btn = st.form_submit_button("Update System Background Image", type="primary")
-
-        if save_bg_btn and new_bg:
-            try:
-                # 1. Build the new settings data row row cleanly
-                bg_update_df = pd.DataFrame([{
-                    "team_name": "SYSTEM_SETTINGS", "step": 0, "start_time": new_bg.strip(),
-                    "end_time": "SYSTEM", "attempts": 0, "status": "BACKGROUND"
-                }])
-
-                # 2. FIXED: Filter out previous background rows using the accurate variable name
-                if not current_logs_fetch.empty:
-                    clean_logs_df = current_logs_fetch[current_logs_fetch["status"] != "BACKGROUND"]
-                    combined_logs = pd.concat([clean_logs_df, bg_update_df], ignore_index=True)
-                else:
-                    combined_logs = bg_update_df
-
-                # 3. Commit the updated block back to Google Sheets
-                conn.update(worksheet="logs", data=combined_logs)
-
-                st.success("App appearance updated! Reloading layout layers...")
-                time.sleep(1)
-                st.rerun()
-            except Exception as e:
-                st.error(f"Cloud update failure: {e}")
-
-    st.markdown("---")
     st.subheader("📋 Operational Live Leaderboard")
     try:
         logs_df = conn.read(worksheet="logs", ttl=1)
-        st.dataframe(logs_df[logs_df["team_name"] != "SYSTEM_SETTINGS"], use_container_width=True)
+        st.dataframe(logs_df, use_container_width=True)
     except:
         st.info("No logs registered in database yet.")
 
@@ -207,7 +162,7 @@ if st.session_state.admin_override:
     if 'quests_df' in locals() or 'quests_df' in globals():
         st.dataframe(quests_df, use_container_width=True)
 
-# PRIORITY ROUTE 2: LOBBY GATEWAY
+# PRIORITY ROUTE 2: PLAYER ACCESS / LOBBY GATE
 elif not st.session_state.team_name:
     st.title(ui["welcome"])
     tab_login, tab_register = st.tabs(["🔐 Log In", "📝 Register New Team/Player"])
@@ -234,7 +189,7 @@ elif not st.session_state.team_name:
                             horizontal=True, label_visibility="collapsed")
         with st.form("registration_engine"):
             if reg_mode == "Individual Solo Player":
-                reg_uid = st.text_input("Choose Unique Login ID", placeholder="e.g., NGHOAN1").strip()
+                reg_uid = st.text_input("Choose Unique Login ID", placeholder="e.g., TEAM1").strip()
                 reg_display = st.text_input("Full Name", placeholder="e.g., Son Hoang Nguyen").strip()
                 roster_meta = "Solo"
             else:
@@ -273,6 +228,7 @@ elif not st.session_state.team_name:
                     pass
                 st.rerun()
 
+    # SYSTEM CONSOLE DRAWER
     st.markdown("---")
     col_left, col_right = st.columns([3, 1])
     with col_right:
@@ -282,7 +238,7 @@ elif not st.session_state.team_name:
                 st.session_state.admin_override = True
                 st.rerun()
 
-# PRIORITY ROUTE 3: ACTIVE GAMEPLAY PIPELINE
+# PRIORITY ROUTE 3: INTERACTIVE GAMEPLAY PIPELINE
 else:
     if st.session_state.current_step <= total_quests:
         active_quest = quests_list[st.session_state.current_step - 1]
@@ -307,14 +263,12 @@ else:
             st.info(
                 f"**{ui['your_clue']}**\n\n### {active_quest.get(f'clue_{selected_lang}', active_quest.get('clue_en'))}")
 
-            # 🖼️ DYNAMIC QUESTION IMAGE RENDER CORES
-            # Checks if an active web image link is present for this question index row item
+            # 🖼️ Dynamic Question Clue Image Render Component
             clue_img = str(active_quest.get('image_url', '')).strip()
             if clue_img and clue_img != "nan" and clue_img != "":
                 st.image(clue_img, use_container_width=True)
 
-            user_ans = st.text_input(ui["part1"], placeholder=ui["part1_holder"]).strip().lower()
-            st.write(f"**{ui['part2']}**")
+            st.write(f"### 🔑 {ui['part2']}")
             st.caption(ui["anti_cheat_sub"])
 
             open_cam = st.checkbox(ui["scan_btn"])
@@ -324,14 +278,14 @@ else:
                 if camera_capture:
                     user_code = st.text_input("Parsed Code Target", value="AUTO-DETECTED").strip().upper()
             else:
-                user_code = st.text_input("Enter Key Manually", placeholder=ui["part2_holder"],
+                user_code = st.text_input("Enter Code Manually", placeholder=ui["part2_holder"],
                                           label_visibility="collapsed").strip().upper()
 
             if st.button(ui["submit_btn"], type="primary", use_container_width=True):
-                target_ans = str(active_quest.get('answer')).strip().lower()
                 target_code = str(active_quest.get('code')).strip().upper()
 
-                if user_ans == target_ans and (user_code == target_code or user_code == "AUTO-DETECTED"):
+                # SINGLE VERIFICATION LAYER CHECK
+                if user_code == target_code or user_code == "AUTO-DETECTED":
                     st.balloons()
                     try:
                         completion_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -352,7 +306,9 @@ else:
         st.title(ui["victory"])
         st.subheader(ui["victory_sub"])
         try:
-            full_logs_df = conn.read(worksheet="logs", ttl=1)
+            # Re-fetch the live log history using the safe hybrid architecture
+            logs_url = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/gviz/tq?tqx=out:csv&sheet=logs"
+            full_logs_df = pd.read_csv(logs_url)
             player_logs = full_logs_df[
                 (full_logs_df["team_name"] == st.session_state.team_name) & (full_logs_df["status"] == "COMPLETED")]
             total_attempts = player_logs["attempts"].sum()
