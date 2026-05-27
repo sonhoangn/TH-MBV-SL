@@ -145,10 +145,10 @@ ui = LOCALIZED_UI[selected_lang]
 # ==============================================================================
 # 4. FIXED RESPONSIVE BACKGROUND GRAPHICS WRAPPER Injection
 # ==============================================================================
-# Inject background styles that match dark and light modes cleanly via global CSS rules
 st.markdown(
     """
     <style>
+    /* Custom Background Layers */
     .stApp {
         background: linear-gradient(rgba(var(--bg-rgb, 255, 255, 255), 0.88), rgba(var(--bg-rgb, 255, 255, 255), 0.88));
         background-attachment: fixed;
@@ -159,6 +159,21 @@ st.markdown(
     }
     @media (prefers-color-scheme: light) {
         .stApp { --bg-rgb: 248, 249, 250; }
+    }
+
+    /* CLEAN UP STANDARD DEPLOYMENT BADGES & FLOATING BUTTONS */
+    #MainMenu {visibility: hidden;}         /* Hides top-right hamburger menu */
+    footer {visibility: hidden;}            /* Hides bottom footer branding text */
+    .stDeployButton {display:none;}        /* Hides top deployment state triggers */
+
+    /* 🛠️ HIDES THE ENTIRE TOP STREAMLIT HEADER (GitHub link, Fork button, etc.) */
+    .stAppHeader {
+        display: none !important;
+    }
+
+    /* Forces the developer "Manage App" floating button drawer to disappear completely */
+    div[data-testid="stManageAppPageNavFloatingActionButton"] {
+        display: none !important;
     }
     </style>
     """,
