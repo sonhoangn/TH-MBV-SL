@@ -193,7 +193,13 @@ with st.sidebar:
                 st.info("No logs registered in database yet.")
 
             st.subheader("🛠️ Active System Layout Configuration")
-            st.dataframe(quests_df, use_container_width=True)
+            # FIX: Check if quests_df exists as a valid pandas DataFrame; if not, wrap the fallback list dynamically
+            if 'quests_df' in locals() or 'quests_df' in globals():
+                st.dataframe(quests_df, use_container_width=True)
+            else:
+                # Convert the fallback data array on the fly so it renders cleanly
+                fallback_df = pd.DataFrame(quests_list)
+                st.dataframe(fallback_df, use_container_width=True)
 
 # ==============================================================================
 # 6. MAIN PLAY ROUTER INFRASTRUCTURE
