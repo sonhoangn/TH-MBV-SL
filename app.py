@@ -628,6 +628,13 @@ else:
                 else:
                     st.error(ui["invalid_match"])
 
+            st.markdown("<br><br>", unsafe_allow_html=True)  # Adds nice breathing room
+            if st.button(ui["logout"], type="secondary", use_container_width=True, key="gameplay_midgame_logout"):
+                st.session_state.team_name = None
+                st.session_state.current_step = 1
+                st.session_state.stage_started = False
+                st.rerun()
+
     else:
         st.title(ui["victory"])
         st.subheader(ui["victory_sub"])
