@@ -9,7 +9,7 @@ from datetime import datetime
 # ==============================================================================
 # 1. GLOBAL INTERFACE SETUP & SYSTEM CONFIGURATION
 # ==============================================================================
-st.set_page_config(page_title="MBV 140Y Treasure Hunt", page_icon="㉦", layout="centered")
+st.set_page_config(page_title="MBV 140Y Treasure Hunt", page_icon="🧭", layout="centered")
 
 # Hardcode the configuration directly to eliminate secrets.toml path mismatches
 DB_URI = "sqlite:///streamlit_app.db"
@@ -334,7 +334,7 @@ elif not st.session_state.team_name:
             player_id = st.text_input(ui["team_label"]).strip()
             enter_gate = st.form_submit_button(ui["start_btn"], type="primary", use_container_width=True)
             if enter_gate and player_id:
-                history_df = conn.query("SELECT * FROM hunt_logs WHERE team_name = :team;", params={"team": player_id})
+                history_df = conn.query("SELECT * FROM hunt_logs WHERE team_name = :team;", params={"team": player_id}, ttl=0)
 
                 if not history_df.empty:
                     st.session_state.team_name = player_id
@@ -367,7 +367,7 @@ elif not st.session_state.team_name:
                                                         use_container_width=True)
 
             if submit_registration and reg_uid:
-                check_exist = conn.query("SELECT 1 FROM hunt_logs WHERE team_name = :team LIMIT 1;", params={"team": reg_uid})
+                check_exist = conn.query("SELECT 1 FROM hunt_logs WHERE team_name = :team LIMIT 1;", params={"team": reg_uid}, ttl=0)
                 if not check_exist.empty:
                     st.error("This Login ID is already taken! Choose another one.")
                 else:
@@ -473,7 +473,7 @@ else:
         st.title(ui["victory"])
         st.subheader(ui["victory_sub"])
 
-        history_df = conn.query("SELECT * FROM hunt_logs WHERE team_name = :team AND status = 'COMPLETED';", params={"team": st.session_state.team_name})
+        history_df = conn.query("SELECT * FROM hunt_logs WHERE team_name = :team AND status = 'COMPLETED';", params={"team": st.session_state.team_name}, ttl=0)
 
         if not history_df.empty:
             records = []
