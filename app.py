@@ -383,7 +383,7 @@ with st.sidebar:
 
 # ROUTE 1: FULL ADMIN OPERATIONS SUITE
 if st.session_state.admin_override:
-    st.title("📊 Global Operations Dashboard")
+    st.title("Administrator Dashboard")
     if st.button("⬅️ Exit Admin Dashboard", type="secondary", use_container_width=True):
         st.session_state.admin_override = False
         st.rerun()
