@@ -276,10 +276,12 @@ if st.session_state.admin_override:
 
             # --- ACTION 1: PROGRESS RESET ---
             st.markdown("#### Progress Control")
+            # Using clean_key to strip out spaces/symbols from the widget tracking key
+            clean_key = "".join(c for c in selected_user if c.isalnum())
+
             if st.button("🔄 Reset User Progress", type="secondary", use_container_width=True,
-                         key=f"reset_{selected_user}"):
+                         key=f"btn_reset_{clean_key}"):
                 with conn.session as session:
-                    # Keep registration block, clear active runtime logs
                     session.execute(text("DELETE FROM hunt_logs WHERE team_name = :team AND status != 'REGISTERED';"),
                                     {"team": selected_user})
                     session.commit()
@@ -292,7 +294,7 @@ if st.session_state.admin_override:
             # --- ACTION 2: ACCOUNT PURGE ---
             st.markdown("#### Danger Zone")
             if st.button("🗑️ Completely Purge User from System", type="danger", use_container_width=True,
-                         key=f"purge_{selected_user}"):
+                         key=f"btn_purge_{clean_key}"):
                 with conn.session as session:
                     session.execute(text("DELETE FROM hunt_logs WHERE team_name = :team;"), {"team": selected_user})
                     session.commit()
