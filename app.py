@@ -188,7 +188,7 @@ quests_list = [
         "clue_en": "Enter the chamber of mist, where colors are locked in a cage and fire bakes the skin to a mirror finish.",
         "clue_vi": "Vào trong sương khói mịt mù, - Sắc màu giam giữ, thiên thu đợi chờ. - Lửa nung bóng mượt nên thơ, - Gương soi diện mạo, bất ngờ hiện lên.",
         "clue_de": "Tritt ein in die Kammer des Nebels, wo Farben gefangen sind und das Feuer die Haut zur Hochglanzpolitur bäckt.",
-        "img_url": "https://www.theslshop.com/wp-content/uploads/2023/01/Paintshop-scaled.jpg",
+        "img_url": "https://i.ytimg.com/vi/4H3qyY6kDq8/maxresdefault.jpg",
         "caption_en": "Visual Clue for station 3.",
         "caption_vi": "Hình ảnh gợi ý Trạm số 3.",
         "caption_de": "Visualisierungshilfe für Station 3.",
