@@ -79,7 +79,8 @@ def confirm_purge_modal(target_player):
 
     clean_key = "".join(c for c in target_player if c.isalnum())
 
-    if st.button("🔥 Yes, Purge Completely", type="danger", use_container_width=True,
+    # 🛠️ FIXED: Changed type="danger" to type="primary"
+    if st.button("🔥 Yes, Purge Completely", type="primary", use_container_width=True,
                  key=f"modal_confirm_delete_{clean_key}"):
         with conn.session as session:
             session.execute(text("DELETE FROM hunt_logs WHERE team_name = :team;"), {"team": target_player})
@@ -315,8 +316,8 @@ if st.session_state.admin_override:
             # --- ACTION 2: ACCOUNT PURGE ---
             st.markdown("#### Danger Zone")
 
-            # Simply trigger our clean global function directly!
-            if st.button("🗑️ Completely Purge User from System", type="danger", use_container_width=True,
+            # 🛠️ FIXED: Changed type="danger" to type="secondary"
+            if st.button("🗑️ Completely Purge User from System", type="secondary", use_container_width=True,
                          key=f"btn_trigger_purge_{clean_key}"):
                 confirm_purge_modal(selected_user)
 
