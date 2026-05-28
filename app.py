@@ -269,14 +269,16 @@ if st.session_state.admin_override:
             "SELECT DISTINCT team_name FROM hunt_logs WHERE team_name IS NOT NULL AND team_name != '';", ttl=0)
 
         if not users_df.empty:
-            selected_user = st.selectbox("Select Profile to Modify", users_df['team_name'].tolist(),
-                                         key="admin_selected_user")
+            selected_user = st.selectbox(
+                "Select Profile to Modify",
+                users_df['team_name'].tolist(),
+                key="admin_selected_user"
+            )
 
             st.markdown(f"### Actions for **{selected_user}**")
 
             # --- ACTION 1: PROGRESS RESET ---
             st.markdown("#### Progress Control")
-            # Using clean_key to strip out spaces/symbols from the widget tracking key
             clean_key = "".join(c for c in selected_user if c.isalnum())
 
             if st.button("🔄 Reset User Progress", type="secondary", use_container_width=True,
@@ -291,16 +293,31 @@ if st.session_state.admin_override:
 
             st.markdown("---")
 
-            # --- ACTION 2: ACCOUNT PURGE ---
+            # --- ACTION 2: ACCOUNT PURGE (MODAL METHOD) ---
             st.markdown("#### Danger Zone")
+
+
+            # Decorative target function to keep state evaluation clean
+            @st.dialog("⚠️ Confirm Account Purge")
+            def confirm_purge_modal(target_player):
+                st.write(
+                    f"Are you absolutely sure you want to permanently delete **{target_player}**? This will wipe all records and log history from the system.")
+
+                # Standalone tracking keys inside isolated modal view space
+                if st.button("🔥 Yes, Purge Completely", type="danger", use_container_width=True,
+                             key=f"modal_confirm_delete_{clean_key}"):
+                    with conn.session as session:
+                        session.execute(text("DELETE FROM hunt_logs WHERE team_name = :team;"), {"team": target_player})
+                        session.commit()
+                    st.success(f"Purged {target_player} completely from active servers!")
+                    time.sleep(1)
+                    st.rerun()
+
+
+            # Master trigger button to invoke modal window wrapper
             if st.button("🗑️ Completely Purge User from System", type="danger", use_container_width=True,
-                         key=f"btn_purge_{clean_key}"):
-                with conn.session as session:
-                    session.execute(text("DELETE FROM hunt_logs WHERE team_name = :team;"), {"team": selected_user})
-                    session.commit()
-                st.success(f"Purged {selected_user} completely from active servers!")
-                time.sleep(1)
-                st.rerun()
+                         key=f"btn_trigger_purge_{clean_key}"):
+                confirm_purge_modal(selected_user)
 
         else:
             st.info("No registered users found.")
