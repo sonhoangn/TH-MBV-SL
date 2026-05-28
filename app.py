@@ -9,7 +9,7 @@ from datetime import datetime
 # ==============================================================================
 # 1. GLOBAL INTERFACE SETUP & SYSTEM CONFIGURATION
 # ==============================================================================
-st.set_page_config(page_title="MBV 140Y Treasure Hunt", page_icon="🗺️", layout="centered")
+st.set_page_config(page_title="MBV 140Y Treasure Hunt", page_icon="㉦", layout="centered")
 
 # Hardcode the configuration directly to eliminate secrets.toml path mismatches
 DB_URI = "sqlite:///streamlit_app.db"
