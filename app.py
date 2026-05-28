@@ -26,7 +26,6 @@ def init_db():
     """Forces a physical database layout file reset to wipe cached schema mismatches"""
     db_file = "streamlit_app.db"
 
-    # CRITICAL: Keep this False so your production data is never wiped!
     FORCE_WIPE_OUT = False
 
     if FORCE_WIPE_OUT and os.path.exists(db_file):
@@ -81,7 +80,6 @@ def confirm_purge_modal(target_player):
 
     clean_key = "".join(c for c in target_player if c.isalnum())
 
-    # 🛠️ FIXED: Changed type="danger" to type="primary"
     if st.button("🔥 Yes, Purge Completely", type="primary", use_container_width=True,
                  key=f"modal_confirm_delete_{clean_key}"):
         with conn.session as session:
@@ -395,7 +393,6 @@ if st.session_state.admin_override:
 
     with tab_leaderboard:
         st.subheader("Leaderboard Summary")
-        # ttl=0 forces Streamlit to drop cache and read live rows
         summary_df = conn.query("""
             SELECT 
                 team_name as 'Team/Player',
@@ -447,7 +444,6 @@ if st.session_state.admin_override:
             # --- ACTION 2: ACCOUNT PURGE ---
             st.markdown("#### Danger Zone")
 
-            # 🛠️ FIXED: Changed type="danger" to type="secondary"
             if st.button("🗑️ Completely Purge User from System", type="secondary", use_container_width=True,
                          key=f"btn_trigger_purge_{clean_key}"):
                 confirm_purge_modal(selected_user)
@@ -590,11 +586,11 @@ else:
             if open_cam:
                 camera_capture = st.camera_input("Scanner Active", label_visibility="collapsed")
                 if camera_capture:
-                    # 🛠️ CONVERT FILE STREAM TO OPENCV IMAGE
+                    # CONVERT FILE STREAM TO OPENCV IMAGE
                     file_bytes = np.asarray(bytearray(camera_capture.read()), dtype=np.uint8)
                     opencv_img = cv2.imdecode(file_bytes, 1)
 
-                    # 🛠️ INITIALIZE OPENCV QR DETECTOR
+                    # INITIALIZE OPENCV QR DETECTOR
                     detector = cv2.QRCodeDetector()
                     decoded_text, points, _ = detector.detectAndDecode(opencv_img)
 
@@ -612,7 +608,6 @@ else:
             if st.button(ui["submit_btn"], type="primary", use_container_width=True):
                 target_code = str(active_quest.get('code')).strip().upper()
 
-                # 🛠️ FIXED: Removed the auto-pass bypass condition
                 if str(user_code).strip().upper() == target_code:
                     st.balloons()
                     end_time_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
