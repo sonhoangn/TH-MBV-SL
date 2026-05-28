@@ -1,3 +1,5 @@
+import cv2
+import numpy as np
 import os
 import streamlit as st
 import pandas as pd
@@ -565,12 +567,44 @@ else:
             st.write(f"### 🔑 {ui['part2']}")
             st.caption(ui["anti_cheat_sub"])
 
+            # open_cam = st.checkbox(ui["scan_btn"])
+            # user_code = ""
+            # if open_cam:
+            #     camera_capture = st.camera_input("Scanner Active", label_visibility="collapsed")
+            #     if camera_capture:
+            #         user_code = "AUTO-DETECTED"
+            # else:
+            #     user_code = st.text_input("Enter Code Manual", placeholder=ui["part2_holder"],
+            #                               label_visibility="collapsed").strip().upper()
+            #
+            # if st.button(ui["submit_btn"], type="primary", use_container_width=True):
+            #     target_code = str(active_quest.get('code')).strip().upper()
+            #
+            #     if str(user_code).strip().upper() == target_code or user_code == "AUTO-DETECTED":
+            #         st.balloons()
+            #         end_time_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
             open_cam = st.checkbox(ui["scan_btn"])
             user_code = ""
+
             if open_cam:
                 camera_capture = st.camera_input("Scanner Active", label_visibility="collapsed")
                 if camera_capture:
-                    user_code = "AUTO-DETECTED"
+                    # 🛠️ CONVERT FILE STREAM TO OPENCV IMAGE
+                    file_bytes = np.asarray(bytearray(camera_capture.read()), dtype=np.uint8)
+                    opencv_img = cv2.imdecode(file_bytes, 1)
+
+                    # 🛠️ INITIALIZE OPENCV QR DETECTOR
+                    detector = cv2.QRCodeDetector()
+                    decoded_text, points, _ = detector.detectAndDecode(opencv_img)
+
+                    if decoded_text:
+                        user_code = str(decoded_text).strip().upper()
+                        st.success(f"✅ QR Code Scanned Successfully!")
+                    else:
+                        user_code = "NOT-FOUND"
+                        st.error(
+                            "❌ No clear QR code detected in the photo. Please adjust your angle or lighting and try again!")
             else:
                 user_code = st.text_input("Enter Code Manual", placeholder=ui["part2_holder"],
                                           label_visibility="collapsed").strip().upper()
@@ -578,7 +612,8 @@ else:
             if st.button(ui["submit_btn"], type="primary", use_container_width=True):
                 target_code = str(active_quest.get('code')).strip().upper()
 
-                if str(user_code).strip().upper() == target_code or user_code == "AUTO-DETECTED":
+                # 🛠️ FIXED: Removed the auto-pass bypass condition
+                if str(user_code).strip().upper() == target_code:
                     st.balloons()
                     end_time_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
