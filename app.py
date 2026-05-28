@@ -265,15 +265,21 @@ if st.session_state.admin_override:
         st.subheader("Manage Active System Profiles")
 
         # Get unique list of registered users
-        users_df = conn.query("SELECT DISTINCT team_name FROM hunt_logs WHERE team_name IS NOT NULL;", ttl=0)
+        users_df = conn.query(
+            "SELECT DISTINCT team_name FROM hunt_logs WHERE team_name IS NOT NULL AND team_name != '';", ttl=0)
 
         if not users_df.empty:
-            selected_user = st.selectbox("Select Profile to Modify", users_df['team_name'].tolist())
+            # We add an explicit key to the selectbox so it retains state during admin clicks
+            selected_user = st.selectbox("Select Profile to Modify", users_df['team_name'].tolist(),
+                                         key="admin_selected_user")
 
+            st.markdown(f"### Actions for **{selected_user}**")
             col_reset, col_delete = st.columns(2)
 
             with col_reset:
-                if st.button("🔄 Reset User Progress", type="warning", use_container_width=True):
+                # 🛠️ FIXED: Changed type from "warning" to "secondary"
+                if st.button("🔄 Reset User Progress", type="secondary", use_container_width=True,
+                             key=f"reset_{selected_user}"):
                     with conn.session as session:
                         # Keep registration block, clear active runtime logs
                         session.execute(
@@ -285,7 +291,9 @@ if st.session_state.admin_override:
                     st.rerun()
 
             with col_delete:
-                if st.button("🗑️ Completely Purge User", type="danger", use_container_width=True):
+                # Type "danger" is valid and turns the button red
+                if st.button("🗑️ Completely Purge User", type="danger", use_container_width=True,
+                             key=f"purge_{selected_user}"):
                     with conn.session as session:
                         session.execute(text("DELETE FROM hunt_logs WHERE team_name = :team;"), {"team": selected_user})
                         session.commit()
