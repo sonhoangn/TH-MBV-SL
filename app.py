@@ -303,7 +303,8 @@ elif not st.session_state.team_name:
     with col_right_admin:
         with st.expander("🔵 Console"):
             admin_pass = st.text_input("Master Password", type="password", key="main_admin_pass")
-            if admin_pass == "MBV140Years":
+            if admin_pass == st.secrets["admin_password"]:
+            # if admin_pass == "MBV140Years":
                 st.session_state.admin_override = True
                 st.rerun()
 
