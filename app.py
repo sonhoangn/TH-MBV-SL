@@ -636,7 +636,7 @@ else:
     else:
         st.title(ui["victory"])
         st.subheader(ui["victory_sub"])
-
+        st.image("MB_W29_140YoI_2026.jpg", use_container_width=True)
         history_df = conn.query("SELECT * FROM hunt_logs WHERE team_name = :team AND status = 'COMPLETED';", params={"team": st.session_state.team_name}, ttl=0)
 
         if not history_df.empty:
