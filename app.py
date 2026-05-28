@@ -104,6 +104,9 @@ quests_list = [
                    "Tôi là gì?",
         "clue_de": "Blicke zum Himmel, doch verirre dich nicht. Meine drei Zacken weisen den Weg über Land, See und Luft – elegant und schlicht. Was bin ich?",
         "img_url": "https://group.mercedes-benz.com/bilder/misc/visuals-stern/mb-stern-2025-04-w1680xh945-cutout.jpg",
+        "caption_en": "Visual Clue for station 1.",
+        "caption_vi": "Hình ảnh gợi ý Trạm số 1.",
+        "caption_de": "Visualisierungshilfe für Station 1.",
         "code": "STAR"
     },
     {
@@ -116,6 +119,9 @@ quests_list = [
                    "Tôi là gì? (gợi ý: hãy nhớ đến triết lý Một người, một động cơ - One Man, One Engine.)",
         "clue_de": "Drei Buchstaben machen aus einer Luxuslimousine ein brüllendes Rennstreckenbiest. Von einem Meister von Hand gefertigt, von West bis Ost. Was bin ich? (Hinweis: Ein Mann, ein Motor)",
         "img_url": "https://di-uploads-pod30.dealerinspire.com/budsnailmotorcarsltd/uploads/2020/05/AMG-Handcrafted-Engine-Production-M139-Engine.jpg",
+        "caption_en": "Visual Clue for station 2.",
+        "caption_vi": "Hình ảnh gợi ý Trạm số 2.",
+        "caption_de": "Visualisierungshilfe für Station 2.",
         "code": "AMG"
     },
     {
@@ -128,6 +134,9 @@ quests_list = [
                    "Tôi là gì?",
         "clue_de": "Von Benz-Ingenieuren entwickelt, um dich in der Spur zu halten. Ich pulse bei Vollbremsung und rette dich in der Not, indem ich das Blockieren der Räder verhindere. Was bin ich?",
         "img_url": "https://500sec.com/wp-content/uploads/2009/12/462255_788468_3661_2880_96067472184-37.jpg",
+        "caption_en": "Visual Clue for station 3.",
+        "caption_vi": "Hình ảnh gợi ý Trạm số 3.",
+        "caption_de": "Visualisierungshilfe für Station 3.",
         "code": "ABS"
     }
 ]
@@ -231,34 +240,60 @@ if st.session_state.admin_override:
         st.session_state.admin_override = False
         st.rerun()
 
-    st.markdown("---")
+    tab_leaderboard, tab_management = st.tabs(["🏆 Leaderboard", "👥 User Management"])
 
-    # 1. SUMMARY TABLE (Aggregated Performance)
-    st.subheader("🏆 Leaderboard Summary")
-    summary_query = """
-        SELECT 
-            team_name as 'Team/Player',
-            COUNT(DISTINCT step) as 'Steps Completed',
-            SUM(attempts) as 'Total Attempts',
-            (strftime('%s', MAX(end_time)) - strftime('%s', MIN(start_time))) / 60.0 as 'Total Duration (min)'
-        FROM hunt_logs
-        WHERE end_time != ''
-        GROUP BY team_name;
-    """
-    try:
-        summary_df = conn.query(summary_query)
+    with tab_leaderboard:
+        st.subheader("Leaderboard Summary")
+        # ttl=0 forces Streamlit to drop cache and read live rows
+        summary_df = conn.query("""
+            SELECT 
+                team_name as 'Team/Player',
+                COUNT(DISTINCT case when status = 'COMPLETED' then step end) as 'Steps Completed',
+                SUM(attempts) as 'Total Attempts',
+                (strftime('%s', MAX(case when status = 'COMPLETED' then end_time end)) - strftime('%s', MIN(case when status = 'REGISTERED' then start_time end))) / 60.0 as 'Total Duration (min)'
+            FROM hunt_logs
+            GROUP BY team_name;
+        """, ttl=0)
         st.dataframe(summary_df, use_container_width=True)
-    except Exception as e:
-        st.info("No data yet for summary.")
 
-    # 2. FULL RAW LOGS
-    st.markdown("---")
-    st.subheader("📋 Raw Operational Logs")
-    try:
-        logs_df = conn.query("SELECT * FROM hunt_logs ORDER BY timestamp DESC;")
+        st.markdown("---")
+        st.subheader("📋 Raw Operational Logs")
+        logs_df = conn.query("SELECT * FROM hunt_logs ORDER BY timestamp DESC;", ttl=0)
         st.dataframe(logs_df, use_container_width=True)
-    except Exception:
-        st.info("Database is initializing...")
+
+    with tab_management:
+        st.subheader("Manage Active System Profiles")
+
+        # Get unique list of registered users
+        users_df = conn.query("SELECT DISTINCT team_name FROM hunt_logs WHERE team_name IS NOT NULL;", ttl=0)
+
+        if not users_df.empty:
+            selected_user = st.selectbox("Select Profile to Modify", users_df['team_name'].tolist())
+
+            col_reset, col_delete = st.columns(2)
+
+            with col_reset:
+                if st.button("🔄 Reset User Progress", type="warning", use_container_width=True):
+                    with conn.session as session:
+                        # Keep registration block, clear active runtime logs
+                        session.execute(
+                            text("DELETE FROM hunt_logs WHERE team_name = :team AND status != 'REGISTERED';"),
+                            {"team": selected_user})
+                        session.commit()
+                    st.success(f"Progress reset completed for {selected_user}!")
+                    time.sleep(1)
+                    st.rerun()
+
+            with col_delete:
+                if st.button("🗑️ Completely Purge User", type="danger", use_container_width=True):
+                    with conn.session as session:
+                        session.execute(text("DELETE FROM hunt_logs WHERE team_name = :team;"), {"team": selected_user})
+                        session.commit()
+                    st.success(f"Purged {selected_user} completely from active servers!")
+                    time.sleep(1)
+                    st.rerun()
+        else:
+            st.info("No registered users found.")
 
 # ROUTE 2: PLAYER ACCESS GATE / ACCESS LOBBY
 elif not st.session_state.team_name:
@@ -366,8 +401,8 @@ else:
             # 🖼️ DYNAMIC CLUE IMAGE VIEWER
             img_target = active_quest.get("img_url", "")
             if img_target:
-                st.image(img_target, caption=f"{ui['checkpoint']} {st.session_state.current_step} Clue Visual Asset",
-                         use_container_width=True)
+                localized_caption = active_quest.get(f"caption_{selected_lang}", active_quest.get("caption_en", ""))
+                st.image(img_target, caption=localized_caption, use_container_width=True)
 
             st.write(f"### 🔑 {ui['part2']}")
             st.caption(ui["anti_cheat_sub"])

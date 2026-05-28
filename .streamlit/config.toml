@@ -1,0 +1,12 @@
+[theme]
+primaryColor = "#00adef"
+backgroundColor = "#111111"
+secondaryBackgroundColor = "#222222"
+textColor = "#ffffff"
+font = "sans serif"
+
+[browser]
+gatherUsageStats = false
+
+[ui]
+hideTopBar = true
