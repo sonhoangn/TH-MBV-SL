@@ -164,7 +164,7 @@ quests_list = [
     {
         "step": 1,
         "clue_en": "Where the first breath of ownership is taken, and the journey begins under the silver sign.",
-        "clue_vi": "Nơi đây đón khách phương xa,\nNhận xe vừa xuất xưởng nhà M B.",
+        "clue_vi": "Nơi đây đón khách phương xa, - Nhận xe vừa xuất xưởng nhà M B.",
         "clue_de": "Wo der erste Atemzug des Eigentums genommen wird und die Reise unter dem silbernen Zeichen beginnt.",
         "img_url": "https://www.mercedes-benz.com.vn/content/dam/hq/passengercars/services/contact/Stage_picture_ContactUs.jpeg/1740017038197.jpg",
         "caption_en": "Visual Clue for station 1.",
@@ -175,7 +175,7 @@ quests_list = [
     {
         "step": 2,
         "clue_en": "I have no skin, only joints of steel welded by light. Find me.",
-        "clue_vi": "Thân không lớp áo bao quanh,\nKhung xương thép cứng, lửa xanh hàn liền.\nTìm nơi tạo tác cơ huyền,\nDáng hình định sẵn, vẹn nguyên đợi chờ.",
+        "clue_vi": "Thân không lớp áo bao quanh, - Khung xương thép cứng, lửa xanh hàn liền. - Tìm nơi tạo tác cơ huyền, - Dáng hình định sẵn, vẹn nguyên đợi chờ.",
         "clue_de": "Ich habe keine Haut, nur stählerne Gelenke, geschweißt durch Licht. Finde mich.",
         "img_url": "https://cafebiz.cafebizcdn.vn/162123310254002176/2022/6/7/gab60151-1654577434630186194482.jpg",
         "caption_en": "Visual Clue for station 2.",
@@ -186,7 +186,7 @@ quests_list = [
     {
         "step": 3,
         "clue_en": "Enter the chamber of mist, where colors are locked in a cage and fire bakes the skin to a mirror finish.",
-        "clue_vi": "Vào trong sương khói mịt mù,\nSắc màu giam giữ, thiên thu đợi chờ.\nLửa nung bóng mượt nên thơ,\nGương soi diện mạo, bất ngờ hiện lên.",
+        "clue_vi": "Vào trong sương khói mịt mù, - Sắc màu giam giữ, thiên thu đợi chờ. - Lửa nung bóng mượt nên thơ, - Gương soi diện mạo, bất ngờ hiện lên.",
         "clue_de": "Tritt ein in die Kammer des Nebels, wo Farben gefangen sind und das Feuer die Haut zur Hochglanzpolitur bäckt.",
         "img_url": "https://www.theslshop.com/wp-content/uploads/2023/01/Paintshop-scaled.jpg",
         "caption_en": "Visual Clue for station 3.",
@@ -197,7 +197,7 @@ quests_list = [
     {
         "step": 4,
         "clue_en": "I am the long, moving pulse of the factory. Millions of parts flow through me to become a machine.",
-        "clue_vi": "Dòng đời chuyển động không ngừng,\nLắp từng linh kiện, lẫy lừng dáng xe.",
+        "clue_vi": "Dòng đời chuyển động không ngừng, - Lắp từng linh kiện, lẫy lừng dáng xe.",
         "clue_de": "Ich bin der lange, pulsierende Schlag der Fabrik. Millionen Teile fließen durch mich, um zur Maschine zu werden.",
         "img_url": "https://cafebiz.cafebizcdn.vn/162123310254002176/2022/6/7/18-16545774359631726680478.png",
         "caption_en": "Visual Clue for station 4.",
@@ -208,7 +208,7 @@ quests_list = [
     {
         "step": 5,
         "clue_en": "I challenge the momentum of the beast. Where the wheels fight the floor to prove their stillness.",
-        "clue_vi": "Tốc độ dừng lại tức thì,\nBánh xe không khóa, quản đi an toàn.",
+        "clue_vi": "Tốc độ dừng lại tức thì, - Bánh xe không khóa, quản đi an toàn.",
         "clue_de": "Ich fordere den Schwung der Bestie heraus. Wo die Räder gegen den Boden kämpfen, um ihre Stille zu beweisen.",
         "img_url": "https://500sec.com/wp-content/uploads/2009/12/462255_788468_3661_2880_96067472184-37.jpg",
         "caption_en": "Visual Clue for station 5.",
@@ -219,7 +219,7 @@ quests_list = [
     {
         "step": 6,
         "clue_en": "I am the silent canyon of steel and rubber, holding the treasures that wait for their call to action.",
-        "clue_vi": "Nơi lưu hàng hóa đợi chờ,\nPhụ tùng xếp lớp, nằm chờ lên khung.",
+        "clue_vi": "Nơi lưu hàng hóa đợi chờ, - Phụ tùng xếp lớp, nằm chờ lên khung.",
         "clue_de": "Ich bin der stille Canyon aus Stahl und Gummi, der die Schätze birgt, die auf ihren Einsatz warten.",
         "img_url": "https://group.mercedes-benz.com/bilder/karriere/ueber-uns/standorte/logistic-center-ger-row/lc-germersheim/lc-germersheim-sperrigteile-w1920xh1080-cutout.jpg",
         "caption_en": "Visual Clue for station 6.",
@@ -230,7 +230,7 @@ quests_list = [
     {
         "step": 7,
         "clue_en": "The finish line that loops back to the start. Where time is reversed and youth is restored to the engine.",
-        "clue_vi": "Sau ngày lăn bánh đường xa,\nChăm lo bảo dưỡng, mặn mà tình thân.",
+        "clue_vi": "Sau ngày lăn bánh đường xa, - Chăm lo bảo dưỡng, mặn mà tình thân.",
         "clue_de": "Die Ziellinie, die zurück zum Anfang führt. Wo die Zeit umgekehrt und der Maschine ihre Jugend zurückgegeben wird.",
         "img_url": "https://mercedes-benz-mauritius.com/assets/img/afterSales/Service&Maintenance.jpg",
         "caption_en": "Visual Clue for station 7.",
@@ -241,7 +241,7 @@ quests_list = [
     {
         "step": 8,
         "clue_en": "When the silicon brain falters, I am the unseen hand that restores the flow. I bridge the divide between man and machine.",
-        "clue_vi": "Bàn tay vô ảnh chuyển vòng,\nNối liền người, máy, dựng dòng tinh anh.",
+        "clue_vi": "Bàn tay vô ảnh chuyển vòng, - Nối liền người, máy, dựng dòng tinh anh.",
         "clue_de": "Wenn das Siliziumhirn stockt, bin ich die unsichtbare Hand, die den Fluss wiederherstellt. Ich überbrücke die Kluft zwischen Mensch und Maschine.",
         "img_url": "https://www.mbusa.com/content/dam/mb-nafta/us/contact-us/XL-Custmer-Assistance-Compact-Tile-1.jpg",
         "caption_en": "Visual Clue for station 8.",
@@ -252,7 +252,7 @@ quests_list = [
     {
         "step": 9,
         "clue_en": "I capture the whispers of the driver. I am the mirror of the road, reflecting satisfaction or silent scorn.",
-        "clue_vi": "Thay lời khách trải dặm xa,\nCầm vô lăng lái, bôn ba đường dài.\nTỉ mỉ soi lỗi từng bài,\nGương soi chân thực, đánh hài lòng ai.",
+        "clue_vi": "Thay lời khách trải dặm xa, - Cầm vô lăng lái, bôn ba đường dài. - Tỉ mỉ soi lỗi từng bài, - Gương soi chân thực, đánh hài lòng ai.",
         "clue_de": "Ich fange das Flüstern des Fahrers ein. Ich bin der Spiegel der Straße, der Zufriedenheit oder stillen Spott reflektiert.",
         "img_url": "https://www.mercedes-benz.com.hk/content/dam/hq/passengercars/buy/storefront/help-faq/liveberatung-1200x1600.jpg/1740016196187.jpg",
         "caption_en": "Visual Clue for station 9.",
@@ -263,7 +263,7 @@ quests_list = [
     {
         "step": 10,
         "clue_en": "Seek the architect of the motion. Find the name that holds 140 years of history in four letters.",
-        "clue_vi": "Một trăm bốn chục năm rồi,\nTên người sáng lập, đời đời khắc ghi.",
+        "clue_vi": "Một trăm bốn chục năm rồi, - Tên người sáng lập, đời đời khắc ghi.",
         "clue_de": "Suche den Architekten der Bewegung. Finde den Namen, der 140 Jahre Geschichte in vier Buchstaben trägt.",
         "img_url": "https://cdn.24h.com.vn/upload/4-2024/images/2024-10-08/Nha-may-Mercedes-Benz-duoc-gia-han-them-5-nam-tai-Viet-Nam-f--2--1728322892-53-width740height495.jpg",
         "caption_en": "Visual Clue for station 10.",
