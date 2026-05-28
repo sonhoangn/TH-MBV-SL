@@ -341,13 +341,13 @@ st.markdown(
     <style>
     /* 2. Global Font Overrides */
     html, body, [data-testid="stWidgetLabel"], .stApp, p, blockquote, div {{
-        font-family: 'Instrument Serif', serif !important;
-        font-size: 1.15rem; /* Slightly scale up regular prose since serif fonts can look smaller */
+        font-family: 'Italiana', sans-serif !important;
+        font-size: 1.15rem; 
     }}
 
-    /* Target headings specifically for an elegant look */
+    /* Target headings */
     h1, h2, h3, h4, h5, h6 {{
-        font-family: 'Instrument Serif', serif !important;
+        font-family: 'Italiana', sans-serif !important;
         font-weight: 400;
     }}
 
