@@ -334,7 +334,24 @@ ui = LOCALIZED_UI[selected_lang]
 # ==============================================================================
 st.markdown(
     f"""
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+
     <style>
+    /* 2. Global Font Overrides */
+    html, body, [data-testid="stWidgetLabel"], .stApp, p, blockquote, div {{
+        font-family: 'Instrument Serif', serif !important;
+        font-size: 1.15rem; /* Slightly scale up regular prose since serif fonts can look smaller */
+    }}
+
+    /* Target headings specifically for an elegant look */
+    h1, h2, h3, h4, h5, h6 {{
+        font-family: 'Instrument Serif', serif !important;
+        font-weight: 400;
+    }}
+
+    /* 3. Existing Adaptive Background Logic */
     .stApp {{
         background: linear-gradient(rgba(var(--bg-rgb, 255, 255, 255), 0.88), rgba(var(--bg-rgb, 255, 255, 255), 0.88)), url("{BG_URL}");
         background-attachment: fixed; background-size: cover; background-position: center;
