@@ -336,18 +336,18 @@ st.markdown(
     f"""
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Italiana&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
 
     <style>
     /* 2. Global Font Overrides */
     html, body, [data-testid="stWidgetLabel"], .stApp, p, blockquote, div {{
-        font-family: 'Italiana', sans-serif !important;
+        font-family: 'Roboto Condensed', sans-serif !important;
         font-size: 1.15rem; 
     }}
 
     /* Target headings */
     h1, h2, h3, h4, h5, h6 {{
-        font-family: 'Italiana', sans-serif !important;
+        font-family: 'Roboto Condensed', sans-serif !important;
         font-weight: 400;
     }}
 
