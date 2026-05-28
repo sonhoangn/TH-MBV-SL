@@ -269,37 +269,37 @@ if st.session_state.admin_override:
             "SELECT DISTINCT team_name FROM hunt_logs WHERE team_name IS NOT NULL AND team_name != '';", ttl=0)
 
         if not users_df.empty:
-            # We add an explicit key to the selectbox so it retains state during admin clicks
             selected_user = st.selectbox("Select Profile to Modify", users_df['team_name'].tolist(),
                                          key="admin_selected_user")
 
             st.markdown(f"### Actions for **{selected_user}**")
-            col_reset, col_delete = st.columns(2)
 
-            with col_reset:
-                # 🛠️ FIXED: Changed type from "warning" to "secondary"
-                if st.button("🔄 Reset User Progress", type="secondary", use_container_width=True,
-                             key=f"reset_{selected_user}"):
-                    with conn.session as session:
-                        # Keep registration block, clear active runtime logs
-                        session.execute(
-                            text("DELETE FROM hunt_logs WHERE team_name = :team AND status != 'REGISTERED';"),
-                            {"team": selected_user})
-                        session.commit()
-                    st.success(f"Progress reset completed for {selected_user}!")
-                    time.sleep(1)
-                    st.rerun()
+            # --- ACTION 1: PROGRESS RESET ---
+            st.markdown("#### Progress Control")
+            if st.button("🔄 Reset User Progress", type="secondary", use_container_width=True,
+                         key=f"reset_{selected_user}"):
+                with conn.session as session:
+                    # Keep registration block, clear active runtime logs
+                    session.execute(text("DELETE FROM hunt_logs WHERE team_name = :team AND status != 'REGISTERED';"),
+                                    {"team": selected_user})
+                    session.commit()
+                st.success(f"Progress reset completed for {selected_user}!")
+                time.sleep(1)
+                st.rerun()
 
-            with col_delete:
-                # Type "danger" is valid and turns the button red
-                if st.button("🗑️ Completely Purge User", type="danger", use_container_width=True,
-                             key=f"purge_{selected_user}"):
-                    with conn.session as session:
-                        session.execute(text("DELETE FROM hunt_logs WHERE team_name = :team;"), {"team": selected_user})
-                        session.commit()
-                    st.success(f"Purged {selected_user} completely from active servers!")
-                    time.sleep(1)
-                    st.rerun()
+            st.markdown("---")
+
+            # --- ACTION 2: ACCOUNT PURGE ---
+            st.markdown("#### Danger Zone")
+            if st.button("🗑️ Completely Purge User from System", type="danger", use_container_width=True,
+                         key=f"purge_{selected_user}"):
+                with conn.session as session:
+                    session.execute(text("DELETE FROM hunt_logs WHERE team_name = :team;"), {"team": selected_user})
+                    session.commit()
+                st.success(f"Purged {selected_user} completely from active servers!")
+                time.sleep(1)
+                st.rerun()
+
         else:
             st.info("No registered users found.")
 
