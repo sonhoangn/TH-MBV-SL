@@ -69,6 +69,25 @@ def push_log_to_db(team, step, start, end, attempts, status, player_type="", mem
         session.commit()
 
 
+# ==============================================================================
+# GLOBAL DIALOG FUNCTIONS (DEFINED AT ROOT LEVEL)
+# ==============================================================================
+@st.dialog("⚠️ Confirm Account Purge")
+def confirm_purge_modal(target_player):
+    st.write(
+        f"Are you absolutely sure you want to permanently delete **{target_player}**? This will wipe all records and log history from the system.")
+
+    clean_key = "".join(c for c in target_player if c.isalnum())
+
+    if st.button("🔥 Yes, Purge Completely", type="danger", use_container_width=True,
+                 key=f"modal_confirm_delete_{clean_key}"):
+        with conn.session as session:
+            session.execute(text("DELETE FROM hunt_logs WHERE team_name = :team;"), {"team": target_player})
+            session.commit()
+        st.success(f"Purged {target_player} completely from active servers!")
+        time.sleep(1)
+        st.rerun()
+
 # Initialize Database Schema
 try:
     init_db()
@@ -293,28 +312,10 @@ if st.session_state.admin_override:
 
             st.markdown("---")
 
-            # --- ACTION 2: ACCOUNT PURGE (MODAL METHOD) ---
+            # --- ACTION 2: ACCOUNT PURGE ---
             st.markdown("#### Danger Zone")
 
-
-            # Decorative target function to keep state evaluation clean
-            @st.dialog("⚠️ Confirm Account Purge")
-            def confirm_purge_modal(target_player):
-                st.write(
-                    f"Are you absolutely sure you want to permanently delete **{target_player}**? This will wipe all records and log history from the system.")
-
-                # Standalone tracking keys inside isolated modal view space
-                if st.button("🔥 Yes, Purge Completely", type="danger", use_container_width=True,
-                             key=f"modal_confirm_delete_{clean_key}"):
-                    with conn.session as session:
-                        session.execute(text("DELETE FROM hunt_logs WHERE team_name = :team;"), {"team": target_player})
-                        session.commit()
-                    st.success(f"Purged {target_player} completely from active servers!")
-                    time.sleep(1)
-                    st.rerun()
-
-
-            # Master trigger button to invoke modal window wrapper
+            # Simply trigger our clean global function directly!
             if st.button("🗑️ Completely Purge User from System", type="danger", use_container_width=True,
                          key=f"btn_trigger_purge_{clean_key}"):
                 confirm_purge_modal(selected_user)
