@@ -535,7 +535,7 @@ elif not st.session_state.team_name:
 else:
     if st.session_state.current_step <= total_quests:
         active_quest = quests_list[st.session_state.current_step - 1]
-        st.title(f"🗺️ {ui['checkpoint']} {st.session_state.current_step} {ui['of']} {total_quests}")
+        st.title(f"❓ {ui['checkpoint']} {st.session_state.current_step} {ui['of']} {total_quests}")
 
         if not st.session_state.stage_started:
             st.warning(ui["clue_locked"])
