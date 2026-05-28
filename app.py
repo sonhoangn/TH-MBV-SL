@@ -170,7 +170,7 @@ quests_list = [
         "caption_en": "Visual Clue for station 1.",
         "caption_vi": "Hình ảnh gợi ý Trạm số 1.",
         "caption_de": "Visualisierungshilfe für Station 1.",
-        "code": "WELCOME"
+        "code": "CUSTOMERCENTER-WELCOME"
     },
     {
         "step": 2,
@@ -181,7 +181,7 @@ quests_list = [
         "caption_en": "Visual Clue for station 2.",
         "caption_vi": "Hình ảnh gợi ý Trạm số 2.",
         "caption_de": "Visualisierungshilfe für Station 2.",
-        "code": "BODY"
+        "code": "BODYSHOP"
     },
     {
         "step": 3,
@@ -192,7 +192,7 @@ quests_list = [
         "caption_en": "Visual Clue for station 3.",
         "caption_vi": "Hình ảnh gợi ý Trạm số 3.",
         "caption_de": "Visualisierungshilfe für Station 3.",
-        "code": "PAINT"
+        "code": "PAINTSHOP"
     },
     {
         "step": 4,
@@ -203,7 +203,7 @@ quests_list = [
         "caption_en": "Visual Clue for station 4.",
         "caption_vi": "Hình ảnh gợi ý Trạm số 4.",
         "caption_de": "Visualisierungshilfe für Station 4.",
-        "code": "ASSEMBLY"
+        "code": "ASSEMBLYLINE"
     },
     {
         "step": 5,
@@ -214,7 +214,7 @@ quests_list = [
         "caption_en": "Visual Clue for station 5.",
         "caption_vi": "Hình ảnh gợi ý Trạm số 5.",
         "caption_de": "Visualisierungshilfe für Station 5.",
-        "code": "ABS"
+        "code": "EOL-BRAKETEST-ABS"
     },
     {
         "step": 6,
@@ -225,7 +225,7 @@ quests_list = [
         "caption_en": "Visual Clue for station 6.",
         "caption_vi": "Hình ảnh gợi ý Trạm số 6.",
         "caption_de": "Visualisierungshilfe für Station 6.",
-        "code": "HANDLINGUNIT"
+        "code": "CKDWAREHOUSE"
     },
     {
         "step": 7,
@@ -236,7 +236,7 @@ quests_list = [
         "caption_en": "Visual Clue for station 7.",
         "caption_vi": "Hình ảnh gợi ý Trạm số 7.",
         "caption_de": "Visualisierungshilfe für Station 7.",
-        "code": "SERVICE"
+        "code": "AFTERSALESERVICE"
     },
     {
         "step": 8,
@@ -247,7 +247,7 @@ quests_list = [
         "caption_en": "Visual Clue for station 8.",
         "caption_vi": "Hình ảnh gợi ý Trạm số 8.",
         "caption_de": "Visualisierungshilfe für Station 8.",
-        "code": "AMG"
+        "code": "ITS-INFRASTRUCTURE"
     },
     {
         "step": 9,
@@ -258,7 +258,7 @@ quests_list = [
         "caption_en": "Visual Clue for station 9.",
         "caption_vi": "Hình ảnh gợi ý Trạm số 9.",
         "caption_de": "Visualisierungshilfe für Station 9.",
-        "code": "ABS"
+        "code": "VOCA-QUALITYASSURANCE"
     },
     {
         "step": 10,
