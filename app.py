@@ -111,6 +111,7 @@ if "admin_override" not in st.session_state:
 
 # Mercedes-Benz 140Y Corporate Asset Background
 BG_URL = "https://group.mercedes-benz.com/bilder/innovationen/specials/140-years-of-innovation/140-years-of-innovation-visual-3-2-w1680xh945-cutout.jpg"
+V_BANNER_URL = "https://images7.alphacoders.com/613/thumb-1920-613769.jpg"
 
 # QUESTS DB INITIATION
 total_quests = len(QDB)
@@ -399,7 +400,7 @@ else:
     else:
         st.title(ui["victory"])
         st.subheader(ui["victory_sub"])
-        st.image("MB_W29_140YoI_2026.jpg", use_container_width=True)
+        st.image(V_BANNER_URL, use_container_width=True)
         history_df = conn.query("SELECT * FROM hunt_logs WHERE team_name = :team AND status = 'COMPLETED';", params={"team": st.session_state.team_name}, ttl=0)
 
         if not history_df.empty:
