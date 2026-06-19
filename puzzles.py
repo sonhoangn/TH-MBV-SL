@@ -52,9 +52,9 @@ QDB = [
         "clue_vi": "Nơi đây đón khách phương xa, - Nhận xe vừa xuất xưởng nhà M B.",
         "clue_de": "Wo der erste Atemzug des Eigentums genommen wird und die Reise unter dem silbernen Zeichen beginnt.",
         "img_url": "https://www.mercedes-benz.com.vn/content/dam/hq/passengercars/services/contact/Stage_picture_ContactUs.jpeg/1740017038197.jpg",
-        "caption_en": "Visual Clue for station 1.",
-        "caption_vi": "Hình ảnh gợi ý Trạm số 1.",
-        "caption_de": "Visualisierungshilfe für Station 1.",
+        "caption_en": " ",
+        "caption_vi": " ",
+        "caption_de": " ",
         "code": "CUSTOMERCENTER-WELCOME"
     },
     {
@@ -63,9 +63,9 @@ QDB = [
         "clue_vi": "Thân không lớp áo bao quanh, - Khung xương thép cứng, lửa xanh hàn liền. - Tìm nơi tạo tác cơ huyền, - Dáng hình định sẵn, vẹn nguyên đợi chờ.",
         "clue_de": "Ich habe keine Haut, nur stählerne Gelenke, geschweißt durch Licht. Finde mich.",
         "img_url": "https://cafebiz.cafebizcdn.vn/162123310254002176/2022/6/7/gab60151-1654577434630186194482.jpg",
-        "caption_en": "Visual Clue for station 2.",
-        "caption_vi": "Hình ảnh gợi ý Trạm số 2.",
-        "caption_de": "Visualisierungshilfe für Station 2.",
+        "caption_en": " ",
+        "caption_vi": " ",
+        "caption_de": " ",
         "code": "BODYSHOP"
     },
     {
@@ -74,9 +74,9 @@ QDB = [
         "clue_vi": "Vào trong sương khói mịt mù, - Sắc màu giam giữ, thiên thu đợi chờ. - Lửa nung bóng mượt nên thơ, - Gương soi diện mạo, bất ngờ hiện lên.",
         "clue_de": "Tritt ein in die Kammer des Nebels, wo Farben gefangen sind und das Feuer die Haut zur Hochglanzpolitur bäckt.",
         "img_url": "https://i.ytimg.com/vi/4H3qyY6kDq8/maxresdefault.jpg",
-        "caption_en": "Visual Clue for station 3.",
-        "caption_vi": "Hình ảnh gợi ý Trạm số 3.",
-        "caption_de": "Visualisierungshilfe für Station 3.",
+        "caption_en": " ",
+        "caption_vi": " ",
+        "caption_de": " ",
         "code": "PAINTSHOP"
     },
     {
@@ -85,9 +85,9 @@ QDB = [
         "clue_vi": "Dòng đời chuyển động không ngừng, - Lắp từng linh kiện, lẫy lừng dáng xe.",
         "clue_de": "Ich bin der lange, pulsierende Schlag der Fabrik. Millionen Teile fließen durch mich, um zur Maschine zu werden.",
         "img_url": "https://cafebiz.cafebizcdn.vn/162123310254002176/2022/6/7/18-16545774359631726680478.png",
-        "caption_en": "Visual Clue for station 4.",
-        "caption_vi": "Hình ảnh gợi ý Trạm số 4.",
-        "caption_de": "Visualisierungshilfe für Station 4.",
+        "caption_en": " ",
+        "caption_vi": " ",
+        "caption_de": " ",
         "code": "ASSEMBLYLINE"
     },
     {
@@ -96,9 +96,9 @@ QDB = [
         "clue_vi": "Tốc độ dừng lại tức thì, - Bánh xe không khóa, quản đi an toàn.",
         "clue_de": "Ich fordere den Schwung der Bestie heraus. Wo die Räder gegen den Boden kämpfen, um ihre Stille zu beweisen.",
         "img_url": "https://500sec.com/wp-content/uploads/2009/12/462255_788468_3661_2880_96067472184-37.jpg",
-        "caption_en": "Visual Clue for station 5.",
-        "caption_vi": "Hình ảnh gợi ý Trạm số 5.",
-        "caption_de": "Visualisierungshilfe für Station 5.",
+        "caption_en": " ",
+        "caption_vi": " ",
+        "caption_de": " ",
         "code": "EOL-BRAKETEST-ABS"
     },
     {
@@ -107,9 +107,9 @@ QDB = [
         "clue_vi": "Nơi lưu hàng hóa đợi chờ, - Phụ tùng xếp lớp, nằm chờ lên khung.",
         "clue_de": "Ich bin der stille Canyon aus Stahl und Gummi, der die Schätze birgt, die auf ihren Einsatz warten.",
         "img_url": "https://group.mercedes-benz.com/bilder/karriere/ueber-uns/standorte/logistic-center-ger-row/lc-germersheim/lc-germersheim-sperrigteile-w1920xh1080-cutout.jpg",
-        "caption_en": "Visual Clue for station 6.",
-        "caption_vi": "Hình ảnh gợi ý Trạm số 6.",
-        "caption_de": "Visualisierungshilfe für Station 6.",
+        "caption_en": " ",
+        "caption_vi": " ",
+        "caption_de": " ",
         "code": "CKDWAREHOUSE"
     },
     {
@@ -118,9 +118,9 @@ QDB = [
         "clue_vi": "Sau ngày lăn bánh đường xa, - Chăm lo bảo dưỡng, mặn mà tình thân.",
         "clue_de": "Die Ziellinie, die zurück zum Anfang führt. Wo die Zeit umgekehrt und der Maschine ihre Jugend zurückgegeben wird.",
         "img_url": "https://mercedes-benz-mauritius.com/assets/img/afterSales/Service&Maintenance.jpg",
-        "caption_en": "Visual Clue for station 7.",
-        "caption_vi": "Hình ảnh gợi ý Trạm số 7.",
-        "caption_de": "Visualisierungshilfe für Station 7.",
+        "caption_en": " ",
+        "caption_vi": " ",
+        "caption_de": " ",
         "code": "AFTERSALESERVICE"
     },
     {
@@ -129,9 +129,9 @@ QDB = [
         "clue_vi": "Bàn tay vô ảnh chuyển vòng, - Nối liền người, máy, dựng dòng tinh anh.",
         "clue_de": "Wenn das Siliziumhirn stockt, bin ich die unsichtbare Hand, die den Fluss wiederherstellt. Ich überbrücke die Kluft zwischen Mensch und Maschine.",
         "img_url": "https://www.mbusa.com/content/dam/mb-nafta/us/contact-us/XL-Custmer-Assistance-Compact-Tile-1.jpg",
-        "caption_en": "Visual Clue for station 8.",
-        "caption_vi": "Hình ảnh gợi ý Trạm số 8.",
-        "caption_de": "Visualisierungshilfe für Station 8.",
+        "caption_en": " ",
+        "caption_vi": " ",
+        "caption_de": " ",
         "code": "ITS-INFRASTRUCTURE"
     },
     {
@@ -140,9 +140,9 @@ QDB = [
         "clue_vi": "Thay lời khách trải dặm xa, - Cầm vô lăng lái, bôn ba đường dài. - Tỉ mỉ soi lỗi từng bài, - Gương soi chân thực, đánh hài lòng ai.",
         "clue_de": "Ich fange das Flüstern des Fahrers ein. Ich bin der Spiegel der Straße, der Zufriedenheit oder stillen Spott reflektiert.",
         "img_url": "https://www.mercedes-benz.com.hk/content/dam/hq/passengercars/buy/storefront/help-faq/liveberatung-1200x1600.jpg/1740016196187.jpg",
-        "caption_en": "Visual Clue for station 9.",
-        "caption_vi": "Hình ảnh gợi ý Trạm số 9.",
-        "caption_de": "Visualisierungshilfe für Station 9.",
+        "caption_en": " ",
+        "caption_vi": " ",
+        "caption_de": " ",
         "code": "VOCA-QUALITYASSURANCE"
     },
     {
@@ -151,9 +151,119 @@ QDB = [
         "clue_vi": "Một trăm bốn chục năm rồi, - Tên người sáng lập, đời đời khắc ghi.",
         "clue_de": "Suche den Architekten der Bewegung. Finde den Namen, der 140 Jahre Geschichte in vier Buchstaben trägt.",
         "img_url": "https://cdn.24h.com.vn/upload/4-2024/images/2024-10-08/Nha-may-Mercedes-Benz-duoc-gia-han-them-5-nam-tai-Viet-Nam-f--2--1728322892-53-width740height495.jpg",
-        "caption_en": "Visual Clue for station 10.",
-        "caption_vi": "Hình ảnh gợi ý Trạm số 10.",
-        "caption_de": "Visualisierungshilfe für Station 10.",
+        "caption_en": " ",
+        "caption_vi": " ",
+        "caption_de": " ",
         "code": "KARL"
+    },
+    {
+        "step": 11,
+        "clue_en": "Before engines roared, I whispered on paper. A number and a promise gave birth to the road. Find the certificate that made motion legal.",
+        "clue_vi": "Trước khi máy nổ vang trời, Chỉ trang giấy mỏng mở đời xe đi. Một số bằng chứng khắc ghi, Khai sinh chuyển động, còn gì quý hơn.",
+        "clue_de": "Bevor Motoren brüllten, flüsterte ich auf Papier. Eine Nummer und ein Versprechen schenkten der Straße ihr erstes Leben. Finde die Urkunde des Anfangs.",
+        "img_url": "https://www.unesco.org/sites/default/files/styles/local/uml/webform/mow001/patent_benz_1_1.jpg",
+        "caption_en": " ",
+        "caption_vi": " ",
+        "caption_de": " ",
+        "code": "DRP37435"
+    },
+    {
+        "step": 12,
+        "clue_en": "I was not the inventor, but I proved the invention could survive the road. Mother of courage, pioneer of distance — follow my trail.",
+        "clue_vi": "Chồng gieo hạt giống đầu tiên, Vợ đem xe chạy nối liền niềm tin. Đường xa chứng thực công trình, Tìm người nữ lái mở mình sử xanh.",
+        "clue_de": "Ich war nicht die Erfinderin, doch ich bewies der Welt die Tauglichkeit des Wagens. Mut, Weite, Vorreitergeist — folge meiner Spur.",
+        "img_url": "https://media.drive.com.au/obj/tx_q:70,rs:auto:1280:720:1/caradvice/private/umrtldlduoxwsowynhgu",
+        "caption_en": " ",
+        "caption_vi": " ",
+        "caption_de": " ",
+        "code": "BERTHABENZ"
+    },
+    {
+        "step": 13,
+        "clue_en": "I guard a page where a three-wheeled dream became the world’s reality. Not just history — but heritage of all mankind. Find where Mercedes-Benz’s first idea was honored forever.",
+        "clue_vi": "Bánh xe ba thuở sơ khai,  Từ trang giấy mỏng mở dài lối đi.  Chẳng riêng một hãng khắc ghi,  Mà thành di sản những gì thế gian.  Tìm nơi lưu giữ vinh quang,  Giấy xưa thành ký ức vàng khắc ghi.",
+        "clue_de": "Ich bewahre die Seite, auf der ein dreirädriger Traum zur Realität der Welt wurde. Nicht nur Geschichte – sondern Erbe der Menschheit. Finde den Ort, an dem die erste Idee von Mercedes-Benz für immer geehrt wird.",
+        "img_url": "https://house.unesco.org/sites/default/files/styles/banner_desktop/public/2025-03/A9ie06os_oj82mq_r9k.jpg.webp",
+        "caption_en": " ",
+        "caption_vi": " ",
+        "caption_de": " ",
+        "code": "UNESCO"
+    },
+    {
+        "step": 14,
+        "clue_en": "I save lives by yielding. I break so people do not. Find the idea that taught steel to sacrifice itself.",
+        "clue_vi": "Sắt kia chẳng phải yếu mềm, Chịu thân biến dạng giữ êm người ngồi. Hy sinh để cứu bao người, An toàn trên hết giữa đời hiểm nguy.",
+        "clue_de": "Ich rette Leben, indem ich nachgebe. Ich zerbreche, damit Menschen es nicht tun. Finde die Idee, die Stahl das Opfern lehrte.",
+        "img_url": "https://www.mercedes-benz.co.nz/content/dam/australia/passengercars/experience/mercedes-me-magazine/innovation/mercedes-benz-car-safety-features/mercedes-benz-car-safety-features-01-2730x1536.jpg/1740122909785.jpg",
+        "caption_en": " ",
+        "caption_vi": " ",
+        "caption_de": " ",
+        "code": "CRUMPLEZONE"
+    },
+    {
+        "step": 15,
+        "clue_en": "I appear in a blink between danger and impact. A hidden guardian that catches what should never fall.",
+        "clue_vi": "Ẩn mình chẳng thấy bao giờ,  Đến khi nguy cấp lại chờ bung ra.",
+        "clue_de": "Ich erscheine im Augenblick zwischen Gefahr und Aufprall. Ein verborgener Beschützer, der auffängt, was niemals fallen sollte.",
+        "img_url": "https://mercedesblog.com/wp-content/uploads/2021/10/Mercedes-Benz-Airbag-2.jpg",
+        "caption_en": " ",
+        "caption_vi": " ",
+        "caption_de": " ",
+        "code": "ABS-PATENT-1971"
+    },
+    {
+        "step": 16,
+        "clue_en": "I am the invisible hand on a slippery curve. When pride oversteers, I quietly return the car to reason.",
+        "clue_vi": "Đường cong trơn trượt chênh vênh, Bàn tay vô ảnh giữ mình khỏi trôi. Xe còn vững lái giữa đời, Tìm tên trợ thủ lặng lời cứu nguy.",
+        "clue_de": "Ich bin die unsichtbare Hand in der rutschigen Kurve. Wenn Übermut ausbricht, führe ich das Fahrzeug still zurück zur Vernunft.",
+        "img_url": "https://mercedesblog.com/wp-content/uploads/2020/05/Electronic-Stability-Control-ESP-3.jpg",
+        "caption_en": " ",
+        "caption_vi": " ",
+        "caption_de": " ",
+        "code": "ESP-1995"
+    },
+    {
+        "step": 17,
+        "clue_en": "I am not a place you can walk to, but a number too vast to ignore. Each mark is an idea, each idea a step forward. Count the legacy of innovation.",
+        "clue_vi": "Một sao chẳng đủ gọi trời, Muôn ngàn sáng kiến rạng ngời nối nhau. Mỗi dòng ý tưởng sinh sôi,  Dẫn đường tiến bước qua thời tháng năm.  Đếm xem dấu ấn âm thầm,  Bao nhiêu phát kiến góp thành hôm nay.",
+        "clue_de": "Ich bin nicht eine Erfindung, sondern ein Sternbild aus vielen — über sechzigtausend Zeichen des Ehrgeizes durch die Zeit verteilt.",
+        "img_url": "https://i0.wp.com/insights.greyb.com/wp-content/uploads/2023/07/Tech-through-the-year-3.png",
+        "caption_en": " ",
+        "caption_vi": " ",
+        "caption_de": " ",
+        "code": "60000-PLUS"
+    },
+    {
+        "step": 18,
+        "clue_en": "I carry no wheel, no axle, no engine block — yet without me, the next chapter never arrives. I am the spirit behind every leap.",
+        "clue_vi": "Không là bánh, chẳng là khung,  Mà là ngọn lửa đi cùng tháng năm.  Âm thầm dẫn lối xa xăm,  Dựng nên ước mộng, ươm mầm mai sau.",
+        "clue_de": "Ich trage weder Rad noch Achse noch Motorblock — und doch beginnt ohne mich kein neues Kapitel. Ich bin der Geist hinter jedem Sprung.",
+        "img_url": "https://group.mercedes-benz.com/bilder/technologie/specials/140-years-of-innovation/140-jahre-innovation-020-1-w1680xh945-cutout.jpg",
+        "caption_en": " ",
+        "caption_vi": " ",
+        "caption_de": " ",
+        "code": "PIONEERING-SPIRIT"
+    },
+    {
+        "step": 19,
+        "clue_en": "The story is old, but my horizon is new. Not one, not ten — but a wave of arrivals shaping tomorrow. Count how many new stars will rise before 2027.",
+        "clue_vi": "Chẳng là nơi để bước vào,  Mà là con số đón chào ngày mai.  Không chỉ một, chẳng dăm ba,  Mà là làn sóng hiện ra nối dài.  Tính xem phía trước tương lai,  Bao nhiêu mẫu mới từ nay đến kỳ.",
+        "clue_de": "Ich bin kein Ort, sondern ein Versprechen der Zukunft. Nicht eins, nicht zehn – sondern eine Welle neuer Ankünfte. Zähle, wie viele Modelle bis 2027 erscheinen werden.",
+        "img_url": "https://s.yimg.com/lo/mysterio/api/714db7f355803bcaab3cb6c5c3fe11dac910ebdcbdb46c5e58cf801b60b0f80e/lightyear_networkapi/resizefill_w1200_h675;quality_80;format_webp/https:%2F%2Fmedia.zenfs.com%2Fen%2Fautoblog_arena_articles_145%2F79a01df7c0c4257cd050d95277c04932",
+        "caption_en": " ",
+        "caption_vi": " ",
+        "caption_de": " ",
+        "code": "40-PLUS-NEW-MODELS"
+    },
+    {
+        "step": 20,
+        "clue_en": "Not in museums alone, not in patents alone — Every colleague, idea, and contribution thrives within me. Find the place where the celebration becomes us.",
+        "clue_vi": "Chẳng riêng ở máy hay xe, Mà trong mỗi ý, mỗi người góp công. Hành trình nối tiếp thành dòng, Tìm nơi tập thể đồng lòng bước xa.",
+        "clue_de": "Nicht nur im Museum, nicht nur im Patent — ich lebe in jedem Kollegen, jeder Idee und jedem Beitrag. Finde den Ort, an dem die Feier zu uns wird.",
+        "img_url": "https://upload.wikimedia.org/wikipedia/commons/e/e5/Mercedes-Benz-Vietnam_factory_workers_management.jpg",
+        "caption_en": " ",
+        "caption_vi": " ",
+        "caption_de": " ",
+        "code": "MERCEDES-BENZ-VIETNAM"
     }
 ]
