@@ -165,7 +165,7 @@ QDB = [
         "caption_en": " ",
         "caption_vi": " ",
         "caption_de": " ",
-        "code": "DRP37435"
+        "code": "DRP-37435"
     },
     {
         "step": 12,
@@ -198,7 +198,7 @@ QDB = [
         "caption_en": " ",
         "caption_vi": " ",
         "caption_de": " ",
-        "code": "CRUMPLEZONE"
+        "code": "CRUMPLE-ZONE"
     },
     {
         "step": 15,
@@ -209,7 +209,7 @@ QDB = [
         "caption_en": " ",
         "caption_vi": " ",
         "caption_de": " ",
-        "code": "ABS-PATENT-1971"
+        "code": "AIRBAG"
     },
     {
         "step": 16,
