@@ -176,7 +176,7 @@ QDB = [
         "caption_en": " ",
         "caption_vi": " ",
         "caption_de": " ",
-        "code": "BERTHABENZ"
+        "code": "BERTHA-BENZ"
     },
     {
         "step": 13,
