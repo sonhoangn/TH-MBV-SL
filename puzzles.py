@@ -205,7 +205,7 @@ QDB = [
         "clue_en": "I appear in a blink between danger and impact. A hidden guardian that catches what should never fall.",
         "clue_vi": "Ẩn mình chẳng thấy bao giờ,  Đến khi nguy cấp lại chờ bung ra.",
         "clue_de": "Ich erscheine im Augenblick zwischen Gefahr und Aufprall. Ein verborgener Beschützer, der auffängt, was niemals fallen sollte.",
-        "img_url": "https://mercedesblog.com/wp-content/uploads/2021/10/Mercedes-Benz-Airbag-2.jpg",
+        "img_url": "https://stories.hemmings.com/wp-content/uploads/2024/03/origin-4187-scaled.jpg",
         "caption_en": " ",
         "caption_vi": " ",
         "caption_de": " ",
