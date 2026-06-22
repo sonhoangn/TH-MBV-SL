@@ -159,7 +159,7 @@ QDB = [
     {
         "step": 11,
         "clue_en": "Before engines roared, I whispered on paper. A number and a promise gave birth to the road. Find the certificate that made motion legal.",
-        "clue_vi": "Trước khi máy nổ vang trời, Chỉ trang giấy mỏng mở đời xe đi. Một số bằng chứng khắc ghi, Khai sinh chuyển động, còn gì quý hơn.",
+        "clue_vi": "Trước khi máy nổ vang trời, Chỉ trang giấy mỏng mở đời xe đi. Một số bằng chứng khắc ghi, Khai sinh chuyển động còn gì quý hơn.",
         "clue_de": "Bevor Motoren brüllten, flüsterte ich auf Papier. Eine Nummer und ein Versprechen schenkten der Straße ihr erstes Leben. Finde die Urkunde des Anfangs.",
         "img_url": "https://www.unesco.org/sites/default/files/styles/local/uml/webform/mow001/patent_benz_1_1.jpg",
         "caption_en": " ",
