@@ -71,6 +71,23 @@ def push_log_to_db(team, step, start, end, attempts, status, player_type="", mem
         })
         session.commit()
 
+def update_running_attempts(team, step, attempts):
+    """Updates the active RUNNING row with the latest attempt count."""
+    with conn.session as session:
+        session.execute(text("""
+            UPDATE hunt_logs
+            SET attempts = :attempts,
+                timestamp = :ts
+            WHERE team_name = :team
+              AND step = :step
+              AND status = 'RUNNING';
+        """), {
+            "team": str(team),
+            "step": int(step),
+            "attempts": int(attempts),
+            "ts": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        })
+        session.commit()
 
 # ==============================================================================
 # 2. GLOBAL DIALOG FUNCTIONS (DEFINED AT ROOT LEVEL)
@@ -108,6 +125,8 @@ if "stage_start_time" not in st.session_state:
     st.session_state.stage_start_time = None
 if "admin_override" not in st.session_state:
     st.session_state.admin_override = False
+if "stage_attempts" not in st.session_state:
+    st.session_state.stage_attempts = 0
 
 # Mercedes-Benz 140Y Corporate Asset Background
 BG_URL = "https://group.mercedes-benz.com/bilder/innovationen/specials/140-years-of-innovation/140-years-of-innovation-visual-3-2-w1680xh945-cutout.jpg"
@@ -175,9 +194,13 @@ if st.session_state.admin_override:
         summary_df = conn.query("""
             SELECT 
                 team_name as 'Team/Player',
-                COUNT(DISTINCT case when status = 'COMPLETED' then step end) as 'Steps Completed',
-                SUM(attempts) as 'Total Attempts',
-                (strftime('%s', MAX(case when status = 'COMPLETED' then end_time end)) - strftime('%s', MIN(case when status = 'REGISTERED' then start_time end))) / 60.0 as 'Total Duration (min)'
+                COUNT(DISTINCT CASE WHEN status = 'COMPLETED' THEN step END) as 'Steps Completed',
+                SUM(CASE WHEN status = 'COMPLETED' THEN attempts ELSE 0 END) as 'Total Attempts',
+                (
+                    strftime('%s', MAX(CASE WHEN status = 'COMPLETED' THEN end_time END)) 
+                    - 
+                    strftime('%s', MIN(CASE WHEN status = 'REGISTERED' THEN start_time END))
+                ) / 60.0 as 'Total Duration (min)'
             FROM hunt_logs
             GROUP BY team_name;
         """, ttl=0)
@@ -253,12 +276,22 @@ elif not st.session_state.team_name:
                         st.session_state.current_step = 1
 
                     # Restore running status safely on session breaks
-                    running_steps = history_df[history_df["status"] == "RUNNING"]["step"].tolist()
-                    if running_steps and (not completed_steps or max(running_steps) > max(completed_steps)):
-                        st.session_state.stage_started = True
-                        st.session_state.stage_start_time = history_df[history_df["status"] == "RUNNING"].iloc[-1]["start_time"]
+                    running_df = history_df[history_df["status"] == "RUNNING"]
+
+                    if not running_df.empty:
+                        latest_running = running_df.iloc[-1]
+                        running_step = int(latest_running["step"])
+
+                        if not completed_steps or running_step > max(completed_steps):
+                            st.session_state.stage_started = True
+                            st.session_state.stage_start_time = latest_running["start_time"]
+                            st.session_state.stage_attempts = int(latest_running["attempts"] or 0)
+                        else:
+                            st.session_state.stage_started = False
+                            st.session_state.stage_attempts = 0
                     else:
                         st.session_state.stage_started = False
+                        st.session_state.stage_attempts = 0
                     st.rerun()
                 else:
                     st.error("Profile ID not found! Please register first.")
@@ -368,6 +401,14 @@ else:
                                           label_visibility="collapsed").strip().upper()
 
             if st.button(ui["submit_btn"], type="primary", use_container_width=True):
+                st.session_state.stage_attempts += 1
+
+                update_running_attempts(
+                    st.session_state.team_name,
+                    st.session_state.current_step,
+                    st.session_state.stage_attempts
+                )
+
                 target_code = str(active_quest.get('code')).strip().upper()
 
                 if str(user_code).strip().upper() == target_code:
@@ -381,11 +422,12 @@ else:
                         gm = res[1] if res else "Unknown"
 
                     push_log_to_db(st.session_state.team_name, st.session_state.current_step,
-                                   st.session_state.stage_start_time, end_time_str, 1, "COMPLETED", player_type=pt,
+                                   st.session_state.stage_start_time, end_time_str, st.session_state.stage_attempts, "COMPLETED", player_type=pt,
                                    members=gm)
 
                     st.session_state.current_step += 1
                     st.session_state.stage_started = False
+                    st.session_state.stage_attempts = 0
                     st.rerun()
                 else:
                     st.error(ui["invalid_match"])
@@ -416,7 +458,8 @@ else:
                     "Station Step": f"Station {row['step']}",
                     "Unlocked At": t1.strftime("%H:%M:%S"),
                     "Verified At": t2.strftime("%H:%M:%S"),
-                    "Duration": f"{duration_mins} min"
+                    "Duration": f"{duration_mins} min",
+                    "Attempts": int(row["attempts"])
                 })
 
             st.metric(label=ui["combined_subs"], value=f"{total_attempts} {ui['attempts']}")
