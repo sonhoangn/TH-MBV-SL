@@ -296,41 +296,41 @@ elif not st.session_state.team_name:
                 else:
                     st.error("Profile ID not found! Please register first.")
 
-    with tab_register:
-        with st.form("registration_engine"):
-            reg_uid = st.text_input("Choose Unique Login ID (No spaces, e.g., TeamAlpha)").strip()
-            player_type_selection = st.radio(ui["reg_type"], [ui["reg_ind"], ui["reg_grp"]])
-            group_members_input = st.text_input(ui["members_label"], placeholder=ui["members_holder"])
-            reg_meta = st.text_input("Additional Coordinator Notes / Comments")
-            submit_registration = st.form_submit_button("Create Profile & Log In", type="primary",
-                                                        use_container_width=True)
-
-            if submit_registration and reg_uid:
-                check_exist = conn.query("SELECT 1 FROM hunt_logs WHERE team_name = :team LIMIT 1;", params={"team": reg_uid}, ttl=0)
-                if not check_exist.empty:
-                    st.error("This Login ID is already taken! Choose another one.")
-                else:
-                    st.session_state.team_name = reg_uid
-                    st.session_state.current_step = 1
-                    st.session_state.stage_started = False
-
-                    final_type = "Individual" if player_type_selection == ui["reg_ind"] else "Group"
-                    final_members = group_members_input if final_type == "Group" else "N/A"
-
-                    push_log_to_db(
-                        team=reg_uid,
-                        step=0,
-                        start=datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                        end="",
-                        attempts=0,
-                        status="REGISTERED",
-                        player_type=final_type,
-                        members=final_members,
-                        notes=reg_meta
-                    )
-                    st.success("Profile initialized online!")
-                    time.sleep(0.5)
-                    st.rerun()
+    # with tab_register:
+    #     with st.form("registration_engine"):
+    #         reg_uid = st.text_input("Choose Unique Login ID (No spaces, e.g., TeamAlpha)").strip()
+    #         player_type_selection = st.radio(ui["reg_type"], [ui["reg_ind"], ui["reg_grp"]])
+    #         group_members_input = st.text_input(ui["members_label"], placeholder=ui["members_holder"])
+    #         reg_meta = st.text_input("Additional Coordinator Notes / Comments")
+    #         submit_registration = st.form_submit_button("Create Profile & Log In", type="primary",
+    #                                                     use_container_width=True)
+    #
+    #         if submit_registration and reg_uid:
+    #             check_exist = conn.query("SELECT 1 FROM hunt_logs WHERE team_name = :team LIMIT 1;", params={"team": reg_uid}, ttl=0)
+    #             if not check_exist.empty:
+    #                 st.error("This Login ID is already taken! Choose another one.")
+    #             else:
+    #                 st.session_state.team_name = reg_uid
+    #                 st.session_state.current_step = 1
+    #                 st.session_state.stage_started = False
+    #
+    #                 final_type = "Individual" if player_type_selection == ui["reg_ind"] else "Group"
+    #                 final_members = group_members_input if final_type == "Group" else "N/A"
+    #
+    #                 push_log_to_db(
+    #                     team=reg_uid,
+    #                     step=0,
+    #                     start=datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+    #                     end="",
+    #                     attempts=0,
+    #                     status="REGISTERED",
+    #                     player_type=final_type,
+    #                     members=final_members,
+    #                     notes=reg_meta
+    #                 )
+    #                 st.success("Profile initialized online!")
+    #                 time.sleep(0.5)
+    #                 st.rerun()
 
     st.markdown("---")
     col_space_div, col_right_admin = st.columns([3, 1])
