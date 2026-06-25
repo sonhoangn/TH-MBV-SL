@@ -272,10 +272,7 @@
 QDB = [
         {
                 "step": 1,
-                "clue_en": "Start of the saga, the shine gets seen, - "
-                           "\nKeys hit palms where the star stays clean. - "
-                           "\nFirst breath of owning, fresh and official - "
-                           "\nFind where the journey turns real, not initial.",
+                "clue_en": "Start of the saga, the shine gets seen, - Keys hit palms where the star stays clean. - First breath of owning, fresh and official — Find where the journey turns real, not initial.",
                 "clue_vi": "Theo ngôi sao bạc lung linh, - Tìm nơi đón khách, nghĩa tình khởi đi.",
                 "clue_de": "Wo der erste Atemzug des Eigentums genommen wird und die Reise unter dem silbernen Zeichen beginnt.",
                 "img_url": "https://cdn.24h.com.vn/upload/4-2024/images/2024-10-08/Nha-may-Mercedes-Benz-duoc-gia-han-them-5-nam-tai-Viet-Nam-f--2--1728322892-53-width740height495.jpg",
