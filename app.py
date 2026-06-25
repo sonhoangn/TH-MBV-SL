@@ -256,7 +256,7 @@ if st.session_state.admin_override:
 # ROUTE 2: PLAYER ACCESS GATE / ACCESS LOBBY
 elif not st.session_state.team_name:
     st.title(ui["welcome"])
-    tab_login = st.tabs(["🔐 Log In"])
+    tab_login, tab_register = st.tabs(["🔐 Log In", " "])
     # tab_login, tab_register = st.tabs(["🔐 Log In", "📝 Register New Team/Player"])
 
     with tab_login:
